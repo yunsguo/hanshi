@@ -47,5 +47,8 @@
     "prettier": "@hanshi/prettier-config",
     "dependencies": {
         "@hanshi/prelude": "^0.0.0"
+    },
+    "publishConfig": {
+        "access": "public"
     }
 }

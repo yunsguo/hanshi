@@ -12,13 +12,15 @@ describe('lib/either', () => {
         it('should have fmap implementation', () => {
             const errLeft = Left.of(new Error('test error'));
             expect(functor[fmap]((a, b) => a + b, errLeft)).toBe(errLeft);
-            expect(functor[fmap]((a) => a + 5, Right.of(5))).toStrictEqual(Right.of(10));
+            expect(functor[fmap]((a) => a + 5, Right.of(5))).toStrictEqual(
+                Right.of(10)
+            );
         });
         it('should have replace implementation', () => {
             const errLeft = Left.of(new Error('test error'));
             const numberRight = Right.of(5);
-            expect(functor[replace](10,errLeft)).toStrictEqual(Right.of(10));
-            expect(functor[replace](5,numberRight)).toStrictEqual(Right.of(5));
+            expect(functor[replace](10, errLeft)).toStrictEqual(Right.of(10));
+            expect(functor[replace](5, numberRight)).toStrictEqual(Right.of(5));
         });
     });
 });

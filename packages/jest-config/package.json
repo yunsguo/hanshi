@@ -1,5 +1,6 @@
 {
   "name": "@hanshi/jest-config",
+  "private": true,
   "version": "1.0.0",
   "description": "> TODO: description",
   "author": "Guo, Yunsheng <yunsguo@gmail.com>",
