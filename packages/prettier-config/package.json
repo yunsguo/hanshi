@@ -1,0 +1,15 @@
+{
+  "name": "@hanshi/prettier-config",
+  "version": "1.0.0",
+  "description": "> TODO: description",
+  "author": "Guo, Yunsheng <yunsguo@gmail.com>",
+  "homepage": "https://github.com/yunsguo/hanshi#readme",
+  "license": "ISC",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yunsguo/hanshi.git"
+  }
+}

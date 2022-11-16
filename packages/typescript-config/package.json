@@ -1,0 +1,19 @@
+{
+  "name": "@hanshi/typescript-config",
+  "version": "1.0.0",
+  "description": "> TODO: description",
+  "author": "Guo, Yunsheng <yunsguo@gmail.com>",
+  "homepage": "https://github.com/yunsguo/hanshi#readme",
+  "license": "ISC",
+	"main": "tsconfig.json",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yunsguo/hanshi.git"
+  },
+  "peerDependencies": {
+    "typescript": ">=4.8.4"
+  }
+}
