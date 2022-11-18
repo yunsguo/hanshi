@@ -1,6 +1,6 @@
 {
     "name": "hanshi",
-    "version": "0.0.0",
+    "version": "0.0.2",
     "description": "> TODO: description",
     "author": "Guo, Yunsheng <yunsguo@gmail.com>",
     "homepage": "https://github.com/yunsguo/hanshi#readme",
@@ -43,8 +43,8 @@
     },
     "prettier": "@hanshi/prettier-config",
     "dependencies": {
-        "@hanshi/prelude": "^0.0.1",
-        "@hanshi/maybe": "^0.0.1",
-        "@hanshi/either": "^0.0.1"
+        "@hanshi/either": "^0.0.2",
+        "@hanshi/maybe": "^0.0.2",
+        "@hanshi/prelude": "^0.0.2"
     }
 }
