@@ -1,15 +1,13 @@
 {
-    "name": "@hanshi/maybe",
-    "version": "0.0.1",
+    "name": "hanshi",
+    "version": "0.0.0",
     "description": "> TODO: description",
     "author": "Guo, Yunsheng <yunsguo@gmail.com>",
     "homepage": "https://github.com/yunsguo/hanshi#readme",
     "license": "MIT",
-    "main": "dist/maybe.js",
-    "types": "dist/maybe.d.ts",
+    "main": "dist/index.js",
     "directories": {
-        "lib": "lib",
-        "test": "__tests__"
+        "lib": "lib"
     },
     "files": [
         "dist"
@@ -29,10 +27,8 @@
     },
     "devDependencies": {
         "@hanshi/eslint-config": "^1.0.0",
-        "@hanshi/jest-config": "^1.0.0",
         "@hanshi/prettier-config": "^1.0.0",
         "@hanshi/typescript-config": "^1.0.0",
-        "@types/jest": "^29.2.2",
         "@typescript-eslint/eslint-plugin": "^5.42.0",
         "@typescript-eslint/parser": "^5.42.0",
         "eslint": "^8.26.0",
@@ -47,9 +43,8 @@
     },
     "prettier": "@hanshi/prettier-config",
     "dependencies": {
-        "@hanshi/prelude": "^0.0.1"
-    },
-    "publishConfig": {
-        "access": "public"
+        "@hanshi/prelude": "^0.0.1",
+        "@hanshi/maybe": "^0.0.1",
+        "@hanshi/either": "^0.0.1"
     }
 }

@@ -1,0 +1,7 @@
+{
+    "extends": "@hanshi/typescript-config",
+    "compilerOptions": {
+        "outDir": "dist"
+    },
+    "include": ["lib/**/*"]
+}

@@ -4,8 +4,9 @@
     "description": "> TODO: description",
     "author": "Guo, Yunsheng <yunsguo@gmail.com>",
     "homepage": "https://github.com/yunsguo/hanshi#readme",
-    "license": "ISC",
-    "main": "dist/lib/index.js",
+    "license": "MIT",
+    "main": "dist/either.js",
+    "types": "dist/either.d.ts",
     "directories": {
         "lib": "lib",
         "test": "__tests__"

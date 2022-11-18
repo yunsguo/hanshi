@@ -10,7 +10,7 @@
         "type": "git",
         "url": "git+https://github.com/yunsguo/hanshi.git"
     },
-    "license": "ISC",
+    "license": "MIT",
     "author": "Guo, Yunsheng <yunsguo@gmail.com>",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
