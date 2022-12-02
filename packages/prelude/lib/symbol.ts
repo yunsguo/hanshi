@@ -1,3 +1,6 @@
+/**
+ * `<$>`
+ */
 const fmap: unique symbol = Symbol.for('Functor.fmap');
 
 /**
@@ -14,13 +17,15 @@ const tie: unique symbol = Symbol.for('Applicable.<*>');
 
 const liftA2: unique symbol = Symbol.for('Applicable.liftA2');
 
+const liftA3: unique symbol = Symbol.for('Applicable.liftA3');
+
 /**
- * `*>`
+ * `<*`
  */
 const rightTie: unique symbol = Symbol.for('Applicable.*>');
 
 /**
- * `<*`
+ * `*>`
  */
 const leftTie: unique symbol = Symbol.for('Applicable.<*');
 
@@ -44,6 +49,7 @@ export {
     pure,
     tie,
     liftA2,
+    liftA3,
     rightTie,
     leftTie,
     bind,

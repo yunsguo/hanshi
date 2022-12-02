@@ -1,3 +1,5 @@
+import * as Symbol from './symbol';
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Functional = (...args: any) => any;
 
@@ -7,10 +9,10 @@ type FunctionalWithReturnType<R> = (...args: any) => R;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type PartialApplied<F> = F extends (arg: any, ...args: infer Ts) => infer R
     ? Parameters<F> extends []
-        ? never
-        : Ts extends []
-        ? R
-        : (...args: Ts) => R
+    ? never
+    : Ts extends []
+    ? R
+    : (...args: Ts) => R
     : never;
 
 type FirstParameter<F extends Functional> = Parameters<F>[0];
@@ -47,8 +49,6 @@ function right<A, B>(_: A, b: B): B {
     return b;
 }
 
-type Unary<A, B> = (arg0: A) => B;
-
 function withSingularity<F extends Functional>(f: F, r: ReturnType<F>): F {
     return new Proxy(f, {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -56,16 +56,23 @@ function withSingularity<F extends Functional>(f: F, r: ReturnType<F>): F {
     }) as F;
 }
 
+type Unary<A, B> = (arg0: A) => B;
+
+type Binary<A, B, C> = (a: A, b: B) => C;
+
+type Tenary<A, B, C, D> = (a: A, b: B, c: C) => D;
+
 export {
     FirstParameter,
     Functional,
     FunctionalWithReturnType,
-    Unary,
     PartialApplied,
     partialApply,
     curry,
     id,
     left,
     right,
-    withSingularity
+    withSingularity,
+    Unary, Binary, Tenary
 };
+
