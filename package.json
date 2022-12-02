@@ -5,5 +5,9 @@
   ],
   "devDependencies": {
     "lerna": "^6.0.1"
+  },
+  "scripts": {
+    "pretest": "lerna run build",
+    "test": "lerna run test"
   }
 }

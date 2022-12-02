@@ -17,7 +17,6 @@
         "url": "git+https://github.com/yunsguo/hanshi.git"
     },
     "scripts": {
-        "test": "jest",
         "build": "rm -rf dist/ && tsc",
         "lint": "eslint . --fix",
         "format": "prettier --write ."
