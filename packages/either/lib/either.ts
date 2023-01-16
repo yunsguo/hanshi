@@ -1,52 +1,51 @@
-import { compose, left, leftTie, remit, right } from '@hanshi/prelude';
 import {
-    bind,
-    decay,
-    FirstParameter,
-    fmap,
-    Functional,
-    FunctionalWithReturnType,
+    ApplicativeTrait,
+    FunctorTrait,
+    left,
+    Monad,
+    MonadTrait,
     PartialApplied,
     partialApply,
-    pure,
-    replace,
-    rightTie,
-    tie,
+    right,
+    Typeclass,
     Unary,
+    withCompliantApplicative,
+    withCompliantFunctor,
+    withCompliantMonad,
     withSingularity
 } from '@hanshi/prelude';
 
 type Either<A, B> = Left<A> | Right<B>;
 
 class Left<T> {
-    [decay]: T;
-    constructor(val: T) {
-        this[decay] = val;
+    [Typeclass.decay]: T;
+    private constructor(val: T) {
+        this[Typeclass.decay] = val;
     }
 
-    static of<U>(val: U): Left<U> {
-        return new Left<U>(val);
+    static of<U>(val: U): Left<U> & Monad<U> {
+        return withTraits(new Left<U>(val));
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     either<R>(f: Unary<T, R>, _: unknown): R {
-        return f(this[decay]);
+        return f(this[Typeclass.decay]);
     }
 }
 
 class Right<T> {
-    [decay]: T;
+    [Typeclass.decay]: T;
     private constructor(val: T) {
-        this[decay] = val;
+        this[Typeclass.decay] = val;
     }
 
-    static of<U>(val: U): Right<U> {
-        return new Right<U>(val);
+    static of<U>(val: U): Right<U> & Monad<U> {
+        return withTraits(new Right<U>(val));
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     either<R>(_: unknown, f: Unary<T, R>): R {
-        return f(this[decay]);
+        return f(this[Typeclass.decay]);
     }
 }
 
@@ -54,45 +53,41 @@ function either<A, B, C>(m1: Unary<C, B>, m2: Unary<A, B>, e: Either<C, A>): B {
     return e.either(m1, m2);
 }
 
-const functor = {
-    [fmap]: <F extends Functional, _>(f: F, fa: Either<_, FirstParameter<F>>) =>
-        (fa instanceof Left
-            ? fa
-            : Right.of(partialApply(f, fa[decay]))) as Either<
-            _,
-            PartialApplied<F>
-        >,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    [replace]: <A, B, _>(a: A, fb: Either<_, B>): Right<A> => Right.of(a)
-};
+const functorTrait: FunctorTrait = withCompliantFunctor({
+    fmap: <A, B>(f: Unary<A, B>, fa: Either<unknown, A>) =>
+        fa instanceof Right
+            ? Right.of(partialApply(f, fa[Typeclass.decay]))
+            : fa,
+    replace: Right.of
+});
 
-const applicative = {
-    ...functor,
-    [pure]: Right.of,
-    [tie]: <F extends Functional, _>(
-        f: Either<_, F>,
-        e: Either<_, FirstParameter<F>>
-    ): Either<_, PartialApplied<F>> =>
-        f instanceof Left ? f : applicative[fmap](f[decay], e),
-    [rightTie]: right,
-    [leftTie]: left
-};
+const applicativeTrait: ApplicativeTrait = withCompliantApplicative({
+    pure: Right.of,
+    tie: (f, e) =>
+        f instanceof Right ? functorTrait.fmap(f[Typeclass.decay], e) : f,
+    rightTie: right,
+    leftTie: left
+});
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const monad = {
-    ...applicative,
-    [bind]: <F extends FunctionalWithReturnType<Either<unknown, unknown>>, _>(
-        f: F,
-        ma: Either<_, FirstParameter<F>>
-    ): PartialApplied<F> =>
-        ma instanceof Left
-            ? withSingularity(
-                  partialApply(f, null),
-                  ma as ReturnType<PartialApplied<F>>
-              )
-            : partialApply(f, ma[decay]),
-    [compose]: right,
-    [remit]: Right.of
-};
+const monadTrait: MonadTrait = withCompliantMonad(
+    {
+        bind: (f, ma) =>
+            ma instanceof Right
+                ? partialApply(f, ma[Typeclass.decay])
+                : withSingularity<PartialApplied<typeof f>>(ma),
+        compose: right
+    },
+    applicativeTrait
+);
 
-export { Either, Left, Right, either, functor, applicative, monad };
+function withTraits<A, T extends Left<A> | Right<A>>(
+    target: T
+): T & Monad<unknown> {
+    return Object.assign(target, {
+        [Typeclass.functor]: functorTrait,
+        [Typeclass.applicable]: applicativeTrait,
+        [Typeclass.monad]: monadTrait
+    });
+}
+
+export { Either, Left, Right, either };

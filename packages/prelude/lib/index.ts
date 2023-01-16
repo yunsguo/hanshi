@@ -1,2 +1,4 @@
+export * from './base';
 export * from './prelude';
-export * from './symbol';
+export * as Typeclass from './typeclass-symbol';
+export * from './typeclass';

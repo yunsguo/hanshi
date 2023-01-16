@@ -1,35 +1,4 @@
-import * as Symbol from './symbol';
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type Functional = (...args: any) => any;
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type FunctionalWithReturnType<R> = (...args: any) => R;
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type PartialApplied<F> = F extends (arg: any, ...args: infer Ts) => infer R
-    ? Parameters<F> extends []
-    ? never
-    : Ts extends []
-    ? R
-    : (...args: Ts) => R
-    : never;
-
-type FirstParameter<F extends Functional> = Parameters<F>[0];
-
-/**
- * partialApply :: (a -> b -> c) -> a -> (b -> c)
- * @template F, As
- * @param {F} f
- * @param {FirstParameter<F>} arg
- * @returns {PartialApplied<F>}
- */
-function partialApply<F extends Functional>(
-    f: F,
-    arg: FirstParameter<F>
-): PartialApplied<F> {
-    return f.length == 1 ? f(arg) : f.bind(null, arg);
-}
+import { FirstParameter, Functional, partialApply } from './base';
 
 function curry<F extends Functional>(f: F) {
     return (arg: FirstParameter<F>) => partialApply(f, arg);
@@ -49,30 +18,11 @@ function right<A, B>(_: A, b: B): B {
     return b;
 }
 
-function withSingularity<F extends Functional>(f: F, r: ReturnType<F>): F {
-    return new Proxy(f, {
+function withSingularity<F extends Functional>(r: ReturnType<F>): F {
+    return new Proxy(withSingularity, {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         apply: (target, thisArg, argumentsList) => r
     }) as F;
 }
 
-type Unary<A, B> = (arg0: A) => B;
-
-type Binary<A, B, C> = (a: A, b: B) => C;
-
-type Tenary<A, B, C, D> = (a: A, b: B, c: C) => D;
-
-export {
-    FirstParameter,
-    Functional,
-    FunctionalWithReturnType,
-    PartialApplied,
-    partialApply,
-    curry,
-    id,
-    left,
-    right,
-    withSingularity,
-    Unary, Binary, Tenary
-};
-
+export { curry, id, left, right, withSingularity };

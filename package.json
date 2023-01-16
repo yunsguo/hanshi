@@ -7,7 +7,9 @@
     "lerna": "^6.0.1"
   },
   "scripts": {
-    "pretest": "lerna run build",
-    "test": "lerna run test"
+    "build": "lerna run build",
+    "test": "lerna run test",
+    "lint": "lerna run lint",
+    "format": "lerna run format"
   }
 }

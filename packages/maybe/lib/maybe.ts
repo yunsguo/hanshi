@@ -1,4 +1,19 @@
-import { decay, Unary } from '@hanshi/prelude';
+import {
+    ApplicativeTrait,
+    FunctorTrait,
+    left,
+    Monad,
+    MonadTrait,
+    PartialApplied,
+    partialApply,
+    right,
+    Typeclass,
+    Unary,
+    withCompliantApplicative,
+    withCompliantFunctor,
+    withCompliantMonad,
+    withSingularity
+} from '@hanshi/prelude';
 
 class Nothing {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
@@ -9,9 +24,9 @@ class Nothing {
 const nothing = new Nothing();
 
 class Just<T> {
-    [decay]: T;
-    constructor(val: T) {
-        this[decay] = val;
+    [Typeclass.decay]: T;
+    private constructor(val: T) {
+        this[Typeclass.decay] = val;
     }
 
     static of<U>(a: U) {
@@ -19,7 +34,7 @@ class Just<T> {
     }
 
     maybe<B>(b: B, f: Unary<T, B>): B {
-        return f(this[decay]);
+        return f(this[Typeclass.decay]);
     }
 }
 
@@ -29,4 +44,33 @@ function maybe<A, B>(b: B, f: Unary<A, B>, ma: Maybe<A>): B {
     return ma.maybe(b, f);
 }
 
-export { Nothing, nothing, Just, maybe };
+const functorTrait: FunctorTrait = withCompliantFunctor({
+    fmap: <A, B>(f: Unary<A, B>, fa: Maybe<A>) =>
+        fa instanceof Just
+            ? Just.of(partialApply(f, fa[Typeclass.decay]))
+            : nothing,
+    replace: Just.of
+});
+
+const applicativeTrait: ApplicativeTrait = withCompliantApplicative({
+    pure: Just.of,
+    tie: (af, aa) =>
+        af instanceof Just
+            ? functorTrait.fmap(af[Typeclass.decay], aa)
+            : nothing,
+    rightTie: right,
+    leftTie: left
+});
+
+const monadTrait: MonadTrait = withCompliantMonad(
+    {
+        bind: (f, ma) =>
+            ma instanceof Just
+                ? partialApply(f, ma[Typeclass.decay])
+                : withSingularity<PartialApplied<typeof f>>(nothing),
+        compose: right
+    },
+    applicativeTrait
+);
+
+export { Nothing, nothing, Just, maybe, functorTrait, applicativeTrait, monadTrait };
