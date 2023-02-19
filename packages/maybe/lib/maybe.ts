@@ -1,40 +1,37 @@
 import {
-    ApplicativeTrait,
-    FunctorTrait,
-    left,
-    Monad,
-    MonadTrait,
+    FirstParameter,
+    Functional,
+    MonadicAction,
     PartialApplied,
-    partialApply,
-    right,
-    Typeclass,
     Unary,
-    withCompliantApplicative,
-    withCompliantFunctor,
-    withCompliantMonad,
-    withSingularity
+    _,
+    left,
+    modified,
+    partial,
+    right
 } from '@hanshi/prelude';
 
 class Nothing {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
-    maybe<B>(b: B, f: Unary<any, B>): B {
-        return b;
+    maybe<A>(a: A, f: Unary<any, A>): A {
+        return a;
     }
 }
 const nothing = new Nothing();
 
 class Just<T> {
-    [Typeclass.decay]: T;
-    private constructor(val: T) {
-        this[Typeclass.decay] = val;
+    private constructor(private $: T) {}
+
+    public get a(): T {
+        return this.$;
     }
 
     static of<U>(a: U) {
         return new Just<U>(a);
     }
 
-    maybe<B>(b: B, f: Unary<T, B>): B {
-        return f(this[Typeclass.decay]);
+    maybe<U>(b: U, f: Unary<T, U>): U {
+        return f(this.$);
     }
 }
 
@@ -44,33 +41,67 @@ function maybe<A, B>(b: B, f: Unary<A, B>, ma: Maybe<A>): B {
     return ma.maybe(b, f);
 }
 
-const functorTrait: FunctorTrait = withCompliantFunctor({
-    fmap: <A, B>(f: Unary<A, B>, fa: Maybe<A>) =>
-        fa instanceof Just
-            ? Just.of(partialApply(f, fa[Typeclass.decay]))
-            : nothing,
-    replace: Just.of
-});
+function fmap<F extends Functional>(
+    f: F,
+    fa: Maybe<FirstParameter<F>>
+): Maybe<PartialApplied<F>> {
+    return fa instanceof Nothing ? nothing : Just.of(partial(f, fa.a));
+}
 
-const applicativeTrait: ApplicativeTrait = withCompliantApplicative({
-    pure: Just.of,
-    tie: (af, aa) =>
-        af instanceof Just
-            ? functorTrait.fmap(af[Typeclass.decay], aa)
-            : nothing,
-    rightTie: right,
-    leftTie: left
-});
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function replace<A, B>(a: A, fb: Maybe<B>): Maybe<A> {
+    return Just.of(a);
+}
 
-const monadTrait: MonadTrait = withCompliantMonad(
-    {
-        bind: (f, ma) =>
-            ma instanceof Just
-                ? partialApply(f, ma[Typeclass.decay])
-                : withSingularity<PartialApplied<typeof f>>(nothing),
-        compose: right
-    },
-    applicativeTrait
-);
+const pure = Just.of;
 
-export { Nothing, nothing, Just, maybe, functorTrait, applicativeTrait, monadTrait };
+function tie<F extends Functional>(
+    mf: Maybe<F>,
+    ma: Maybe<FirstParameter<F>>
+): Maybe<PartialApplied<F>> {
+    return mf instanceof Just && ma instanceof Just
+        ? Just.of(partial(mf.a, ma.a))
+        : nothing;
+}
+
+const rightTie: <A, B>(ma: Maybe<A>, mb: Maybe<B>) => Maybe<B> = right;
+
+const leftTie: <A, B>(ma: Maybe<A>, mb: Maybe<B>) => Maybe<A> = left;
+
+function assignedHandler<F extends Functional>(
+    pa: Maybe<FirstParameter<F>>,
+    target: F,
+    thisArg: null,
+    [, ...args]: Parameters<F>
+) {
+    return pa instanceof Nothing ? nothing : target(pa.a, ...args);
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function compose<F extends MonadicAction<Maybe<any>>>(
+    f: F,
+    pa: Maybe<FirstParameter<F>>
+): PartialApplied<F> {
+    return modified(f, _(assignedHandler, pa));
+}
+
+const rightCompose: typeof rightTie = right;
+
+const leftCompose: typeof leftTie = left;
+
+export {
+    Nothing,
+    nothing,
+    Just,
+    Maybe,
+    maybe,
+    fmap,
+    replace,
+    pure,
+    tie,
+    rightTie,
+    leftTie,
+    compose,
+    rightCompose,
+    leftCompose
+};

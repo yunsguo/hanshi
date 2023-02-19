@@ -1,5 +1,5 @@
-import { Functor, partialApply } from '@hanshi/prelude';
-import { Nothing, nothing, Just, maybe, functorTrait, applicativeTrait, monadTrait } from '../lib/maybe';
+import { _ } from '@hanshi/prelude';
+import { Just, Nothing, fmap, maybe, nothing } from '../lib/maybe';
 
 describe('lib/maybe', () => {
     describe('maybe', () => {
@@ -16,10 +16,12 @@ describe('lib/maybe', () => {
             expect(Just.of(5) instanceof Just).toBe(true);
         });
     });
-    function add(a: number, b: number) { return a + b; }
+    function add(a: number, b: number) {
+        return a + b;
+    }
     describe('traits', () => {
         it('should have proper typeclass behavior', () => {
-            expect(functorTrait.fmap(partialApply(add, 1), Just.of(2) as Functor<number>)).toBe(Just.of(3));
+            expect(fmap(_(add, 1), Just.of(2))).toStrictEqual(Just.of(3));
         });
     });
 });

@@ -1,5 +1,5 @@
-import { fmap, id, replace } from '@hanshi/prelude';
-import { Left, Right, either, functor } from '../lib/either';
+import { id } from '@hanshi/prelude';
+import { Left, Right, either, fmap, replace } from '../lib/either';
 
 describe('lib/either', () => {
     describe('either', () => {
@@ -11,16 +11,14 @@ describe('lib/either', () => {
     describe('functor', () => {
         it('should have fmap implementation', () => {
             const errLeft = Left.of(new Error('test error'));
-            expect(functor[fmap]((a, b) => a + b, errLeft)).toBe(errLeft);
-            expect(functor[fmap]((a) => a + 5, Right.of(5))).toStrictEqual(
-                Right.of(10)
-            );
+            expect(fmap((a, b) => a + b, errLeft)).toStrictEqual(errLeft);
+            expect(fmap((a) => a + 5, Right.of(5))).toStrictEqual(Right.of(10));
         });
         it('should have replace implementation', () => {
             const errLeft = Left.of(new Error('test error'));
             const numberRight = Right.of(5);
-            expect(functor[replace](10, errLeft)).toStrictEqual(Right.of(10));
-            expect(functor[replace](5, numberRight)).toStrictEqual(Right.of(5));
+            expect(replace(10, errLeft)).toStrictEqual(Right.of(10));
+            expect(replace(5, numberRight)).toStrictEqual(Right.of(5));
         });
     });
 });
