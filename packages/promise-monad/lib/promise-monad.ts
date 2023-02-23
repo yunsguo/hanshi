@@ -1,4 +1,12 @@
-import { FirstParameter, Functional, MonadicAction, PartialApplied, _ } from '@hanshi/prelude';
+import {
+    FirstParameter,
+    Functional,
+    MonadicAction,
+    PartialApplied,
+    _,
+    left,
+    modified
+} from '@hanshi/prelude';
 
 /**
  * fmap :: (a -> b) -> f a -> f b
@@ -22,6 +30,17 @@ function fmap<F extends Functional>(
     fa: Promise<Awaited<FirstParameter<F>>>
 ): Promise<PartialApplied<F>> {
     return fa.then(_(_<F>, f));
+}
+
+/**
+ *
+ * @param a
+ * @param pb
+ * @returns
+ */
+function replace<A, B>(a: A, pb: Promise<B>): Promise<A> {
+    const rep = _(left<A, B>, a);
+    return pb.then(rep, rep);
 }
 
 /**
@@ -88,6 +107,24 @@ function tie<F extends Functional>(
     return Promise.all([pf, pa]).then(([f, a]) => _(f, a));
 }
 
+function rightTie<A, B>(fa: Promise<A>, fb: Promise<B>): Promise<B> {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    return fa.then(_(left<Promise<B>, A>, fb));
+}
+
+function leftTie<A, B>(fa: Promise<A>, fb: Promise<B>): Promise<A> {
+    return rightTie(fb, fa);
+}
+
+function assignedHandler<F extends Functional>(
+    pa: Promise<FirstParameter<F>>,
+    target: F,
+    thisArg: null,
+    [, ...args]: Parameters<F>
+) {
+    return pa.then((a) => target(a, ...args));
+}
+
 /**
  * `>>=` :: forall a b. m a -> (a -> m b) -> m b
  *
@@ -128,12 +165,9 @@ function compose<R, F extends MonadicAction<Promise<R>>>(
     f: F,
     pa: Promise<Awaited<FirstParameter<F>>>
 ): PartialApplied<F> {
-    return _(
-        new Proxy(f, {
-            apply: (target, _thisArg, [, ...args]) =>
-                pa.then((a) => target(a, ...args))
-        }),
-        undefined
-    );
+    return _(modified(_(assignedHandler, pa), f) as F, undefined);
 }
-export { fmap, pure, tie, compose };
+
+const sequence = rightTie;
+
+export { fmap, replace, pure, tie, rightTie, leftTie, compose, sequence };
