@@ -82,7 +82,7 @@ function compose<F extends MonadicAction<Maybe<any>>>(
     f: F,
     pa: Maybe<FirstParameter<F>>
 ): PartialApplied<F> {
-    return modified(f, _(assignedHandler, pa));
+    return partial(modified(_(assignedHandler, pa), f) as F, undefined);
 }
 
 const rightCompose: typeof rightTie = right;

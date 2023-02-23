@@ -93,7 +93,7 @@ function partitionEithers<A, B>(es: Either<A, B>[]): [A[], B[]] {
     );
 }
 
-function fmap<F extends Functional, L>(
+function fmap<F extends Functional, L = unknown>(
     f: F,
     e: Either<L, FirstParameter<F>>
 ): Either<L, PartialApplied<F>> {
@@ -138,7 +138,7 @@ function compose<L, F extends MonadicAction<Either<L, any>>>(
     f: F,
     pa: Either<L, FirstParameter<F>>
 ): PartialApplied<F> {
-    return modified(f, _(assignedHandler, pa));
+    return _(modified(_(assignedHandler, pa), f) as F, undefined);
 }
 
 const rightCompose: typeof rightTie = right;

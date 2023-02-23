@@ -1,1 +1,1 @@
-### Hanshi is a funtional programming library that designed to be minimum bolarplated, pattern compliant and typescript/javascript native.
+### Hanshi is a funtional programming library that designed to be minimally bolarplated, pattern compliant and typescript/javascript native.
