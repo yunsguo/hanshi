@@ -43,7 +43,7 @@
         "typescript": "^4.8.4"
     },
     "dependencies": {
-        "@hanshi/prelude": "^0.0.3"
+        "@hanshi/prelude": "^0.0.2"
     },
     "eslintConfig": {
         "extends": "@hanshi"
