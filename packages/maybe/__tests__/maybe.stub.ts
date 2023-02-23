@@ -57,12 +57,10 @@ describe('lib/maybe', () => {
                 expect(tie(fmap(add, Just.of(6)), Just.of(7))).toStrictEqual(
                     Just.of(13)
                 );
-                expect(tie<typeof add>(nothing, Just.of(7))).toBe(
+                expect(tie<typeof add>(nothing, Just.of(7))).toBe(nothing);
+                expect(tie<typeof add>(fmap(add, Just.of(6)), nothing)).toBe(
                     nothing
                 );
-                expect(
-                    tie<typeof add>(fmap(add, Just.of(6)), nothing)
-                ).toBe(nothing);
             });
         });
         const addMaybe = (a: number, b: number) =>

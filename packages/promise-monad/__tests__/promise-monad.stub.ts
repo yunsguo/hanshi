@@ -54,9 +54,9 @@ describe('lib/promise-monad', () => {
     });
     describe('leftTie', () => {
         it('should sequence operations and combine their results', () => {
-            expect(leftTie(Promise.resolve(5), Promise.resolve('a'))).toStrictEqual(
-                Promise.resolve(5)
-            );
+            expect(
+                leftTie(Promise.resolve(5), Promise.resolve('a'))
+            ).toStrictEqual(Promise.resolve(5));
         });
     });
     describe('>>=', () => {
