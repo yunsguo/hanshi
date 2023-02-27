@@ -17,7 +17,10 @@ function _<F extends Functional>(
     return f.length === 1 ? f(arg) : f.bind(null, arg);
 }
 
-function modified<F extends Functional>(apply: ProxyHandler<F>['apply'], f: F) {
+function modified<F extends Functional>(
+    apply: ProxyHandler<F>['apply'],
+    f: F
+): Functional {
     return new Proxy(f, { apply });
 }
 
