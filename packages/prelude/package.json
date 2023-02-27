@@ -1,6 +1,6 @@
 {
     "name": "@hanshi/prelude",
-    "version": "0.0.2",
+    "version": "0.0.3-alpha.17+8600ef6",
     "description": "> TODO: description",
     "homepage": "https://github.com/yunsguo/hanshi#readme",
     "bugs": {
@@ -48,5 +48,6 @@
     },
     "publishConfig": {
         "access": "public"
-    }
+    },
+    "gitHead": "8600ef6b07e87c9ac7b71f3b3a92eb0df6c3d15d"
 }
