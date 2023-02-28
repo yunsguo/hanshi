@@ -45,6 +45,5 @@
         "@hanshi/either": "^0.0.3",
         "@hanshi/maybe": "^0.0.3",
         "@hanshi/prelude": "^0.0.3"
-    },
-    "gitHead": "8600ef6b07e87c9ac7b71f3b3a92eb0df6c3d15d"
+    }
 }
