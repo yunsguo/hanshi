@@ -1,54 +1,59 @@
 // For pattern matching reasons, any is used in the type definitions
 /* eslint-disable @typescript-eslint/no-explicit-any */
+
 type Functional = (...args: any[]) => any;
 
-type FirstParameter<F extends Functional> = Parameters<F>[0];
-
-type PartialApplied<F> = F extends (arg: any, ...args: infer As) => infer R
-    ? As extends []
-        ? R
-        : (...args: As) => R
+type FirstParameter<F> = F extends (...args: [infer Head, ...any[]]) => any
+    ? Head
     : never;
 
-function _<F extends Functional>(
-    f: F,
-    arg: FirstParameter<F>
-): PartialApplied<F> {
-    return f.length === 1 ? f(arg) : f.bind(null, arg);
-}
+type NPartialApplied<F, Args> = F extends (
+    ...args: [infer Arg, ...infer Rest]
+) => infer R
+    ? Args extends [infer Head, ...infer Tails]
+        ? Head extends Arg
+            ? Tails extends []
+                ? Rest extends []
+                    ? R
+                    : (...args: Rest) => R
+                : NPartialApplied<(...args: Rest) => R, Tails>
+            : never
+        : never
+    : never;
+
+type PartialApplied<F> = NPartialApplied<F, [FirstParameter<F>]>;
 
 function modified<F extends Functional>(
-    apply: ProxyHandler<F>['apply'],
+    apply: Exclude<ProxyHandler<F>['apply'], undefined>,
     f: F
 ): Functional {
     return new Proxy(f, { apply });
 }
 
-type Lifted<F extends Functional, R> = (...args: Parameters<F>) => R;
+type Predicate<T> = Unary<T, boolean>;
 
-function defaultedTryCatchHandler<F extends Functional, D>(
-    defaulted: D,
-    target: F,
-    thisArg: null,
-    argArray: Parameters<F>
-): ReturnType<F> | D {
-    try {
-        return target(...argArray);
-    } catch (e) {
-        console.debug('failable', e);
-        return defaulted;
-    }
+const errorToString = Object.prototype.toString.call(new Error());
+
+function isError(e: unknown): e is Error {
+    return Object.prototype.toString.call(e) === errorToString;
 }
 
-const failable: <F extends Functional>(
-    f: F
-) => Lifted<F, undefined | ReturnType<F>> = _(
-    modified,
-    _(defaultedTryCatchHandler, undefined)
-);
+class FunctionPredicateError<F extends Functional> extends Error {
+    constructor(
+        private f: F,
+        private p: Predicate<F>,
+        private original: unknown
+    ) {
+        super(`Error applying predicate ${p} to function ${f}`);
 
-function defaultedFailable<F extends Functional, D>(f: F, defaulted: D): F {
-    return modified(_(defaultedTryCatchHandler, defaulted), f) as F;
+        Object.setPrototypeOf(this, FunctionPredicateError.prototype);
+
+        Error.captureStackTrace(this, FunctionPredicateError); // capture stack trace of the custom error
+        if (isError(original) && original.stack) {
+            // append stack trace of original error
+            this.stack += `\nCaused by: ${original.stack}`;
+        }
+    }
 }
 
 class PartialError<F extends Functional, Args> extends Error {
@@ -60,13 +65,45 @@ class PartialError<F extends Functional, Args> extends Error {
     }
 }
 
-const zeroArity = defaultedFailable((f) => f.length === 0, false);
+type Nullary<R> = () => R;
+
+function checkFunctionWithError<F extends Functional>(
+    f: F,
+    p: Predicate<F>,
+    n: Nullary<Error>
+) {
+    try {
+        if (p(f)) throw n();
+    } catch (e) {
+        throw new FunctionPredicateError(f, p, e);
+    }
+}
+
+function blindBind<F extends Functional>(f: F): PartialApplied<F> {
+    checkFunctionWithError(
+        f,
+        (f) => f.length <= 0,
+        () => new PartialError(f, [])
+    );
+    return f.length === 1 ? f(undefined) : f.bind(null, undefined);
+}
+
+function _<F extends Functional>(
+    f: F,
+    arg: FirstParameter<F>
+): PartialApplied<F> {
+    return f.length === 1 ? f(arg) : f.bind(null, arg);
+}
 
 function partial<F extends Functional>(
     f: F,
     arg: FirstParameter<F>
 ): PartialApplied<F> {
-    if (zeroArity(f)) throw new PartialError(f, [arg]);
+    checkFunctionWithError(
+        f,
+        (f) => f.length <= 0,
+        () => new PartialError(f, [arg])
+    );
     return _(f, arg);
 }
 
@@ -74,36 +111,23 @@ type Prefix<T extends unknown[]> = T extends [...infer Init, infer Last]
     ? Prefix<Init> | [...Init, Last]
     : [];
 
-type NPartialApplied<F, Args> = F extends (
-    arg: infer A,
-    ...args: any[]
-) => unknown
-    ? Args extends [infer Head, ...infer Tails]
-        ? Head extends A
-            ? Tails extends []
-                ? PartialApplied<F>
-                : NPartialApplied<PartialApplied<F>, Tails>
-            : never
-        : never
-    : never;
+function $<
+    F extends Functional,
+    Args extends Exclude<Prefix<Parameters<F>>, []>
+>(f: F, args: Args): NPartialApplied<F, Args> {
+    return f.length === args.length ? f(...args) : f.bind(null, ...args);
+}
 
-const wrongArity = defaultedFailable(
-    (f, args) => f.length === 0 || args.length > f.length,
-    false
-);
-
-/**
- *
- * @param f
- * @param args
- * @returns
- */
 function partialN<
     F extends Functional,
     Args extends Exclude<Prefix<Parameters<F>>, []>
 >(f: F, args: Args): NPartialApplied<F, Args> {
-    if (wrongArity(f, args)) throw new PartialError(f, args);
-    return f.length === args.length ? f(...args) : f.bind(null, ...args);
+    checkFunctionWithError(
+        f,
+        (f) => f.length <= 0 || args.length > f.length,
+        () => new PartialError(f, args)
+    );
+    return $(f, args);
 }
 
 class CurryingError<F extends Functional> extends Error {
@@ -113,12 +137,14 @@ class CurryingError<F extends Functional> extends Error {
     }
 }
 
-const arityLessThan2 = defaultedFailable((f) => f.length < 2, false);
-
 function curry<F extends Functional>(
     f: F
 ): Unary<FirstParameter<F>, PartialApplied<F>> {
-    if (arityLessThan2(f)) throw new CurryingError(f);
+    checkFunctionWithError(
+        f,
+        (f) => f.length < 2,
+        () => new CurryingError(f)
+    );
     return _(_<F>, f);
 }
 
@@ -135,17 +161,9 @@ function right<A, B>(_: A, b: B): B {
     return b;
 }
 
-/**
- *
- * @param f
- * @param r
- * @returns
- */
 function withConstant<F extends Functional>(f: F, r: ReturnType<F>): F {
-    return new Proxy(f, {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        apply: _((result, target, thisArg, argArray) => result, r)
-    });
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    return modified((target, thisArg, argArray) => r, f) as F;
 }
 
 type Unary<A, B> = (a: A) => B;
@@ -163,22 +181,25 @@ type MonadicAction<R> = (...args: any[]) => R;
 export {
     Functional,
     FirstParameter,
+    blindBind,
     _,
     modified,
     partial,
     PartialApplied,
+    Prefix,
+    $,
     partialN,
     NPartialApplied,
-    failable,
-    defaultedFailable,
     curry,
     id,
     left,
     right,
     withConstant,
+    Nullary,
     Unary,
     Binary,
     Ternary,
+    Predicate,
     Assigned,
     MonadicAction
 };

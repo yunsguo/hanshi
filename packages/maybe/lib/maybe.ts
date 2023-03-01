@@ -5,6 +5,7 @@ import {
     PartialApplied,
     Unary,
     _,
+    blindBind,
     left,
     modified,
     partial,
@@ -68,21 +69,18 @@ const rightTie: <A, B>(ma: Maybe<A>, mb: Maybe<B>) => Maybe<B> = right;
 
 const leftTie: <A, B>(ma: Maybe<A>, mb: Maybe<B>) => Maybe<A> = left;
 
-function assignedHandler<F extends Functional>(
-    pa: Maybe<FirstParameter<F>>,
-    target: F,
-    thisArg: null,
-    [, ...args]: Parameters<F>
-) {
-    return pa instanceof Nothing ? nothing : target(pa.a, ...args);
-}
-
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function compose<F extends MonadicAction<Maybe<any>>>(
     f: F,
     pa: Maybe<FirstParameter<F>>
 ): PartialApplied<F> {
-    return partial(modified(_(assignedHandler, pa), f) as F, undefined);
+    return blindBind(
+        modified(
+            (target, thisArg, [, ...args]) =>
+                pa instanceof Nothing ? nothing : target(pa.a, ...args),
+            f
+        ) as F
+    );
 }
 
 const rightCompose: typeof rightTie = right;

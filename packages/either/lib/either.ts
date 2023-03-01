@@ -4,7 +4,7 @@ import {
     MonadicAction,
     PartialApplied,
     Unary,
-    _,
+    blindBind,
     id,
     left,
     modified,
@@ -124,21 +124,18 @@ const rightTie: <A, B, L>(ma: Either<L, A>, mb: Either<L, B>) => Either<L, B> =
 const leftTie: <A, B, L>(ma: Either<L, A>, mb: Either<L, B>) => Either<L, A> =
     left;
 
-function assignedHandler<L, F extends Functional>(
-    pa: Either<L, FirstParameter<F>>,
-    target: F,
-    thisArg: null,
-    [, ...args]: Parameters<F>
-) {
-    return pa instanceof Left ? pa : target(pa.a, ...args);
-}
-
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function compose<L, F extends MonadicAction<Either<L, any>>>(
     f: F,
     pa: Either<L, FirstParameter<F>>
 ): PartialApplied<F> {
-    return _(modified(_(assignedHandler, pa), f) as F, undefined);
+    return blindBind(
+        modified(
+            (target, thisArg, [, ...args]) =>
+                pa instanceof Left ? pa : target(pa.a, ...args),
+            f
+        ) as F
+    );
 }
 
 const rightCompose: typeof rightTie = right;

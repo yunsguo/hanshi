@@ -4,6 +4,7 @@ import {
     MonadicAction,
     PartialApplied,
     _,
+    blindBind,
     left,
     modified
 } from '@hanshi/prelude';
@@ -116,15 +117,6 @@ function leftTie<A, B>(fa: Promise<A>, fb: Promise<B>): Promise<A> {
     return rightTie(fb, fa);
 }
 
-function assignedHandler<F extends Functional>(
-    pa: Promise<FirstParameter<F>>,
-    target: F,
-    thisArg: null,
-    [, ...args]: Parameters<F>
-) {
-    return pa.then((a) => target(a, ...args));
-}
-
 /**
  * `>>=` :: forall a b. m a -> (a -> m b) -> m b
  *
@@ -165,7 +157,13 @@ function compose<R, F extends MonadicAction<Promise<R>>>(
     f: F,
     pa: Promise<Awaited<FirstParameter<F>>>
 ): PartialApplied<F> {
-    return _(modified(_(assignedHandler, pa), f) as F, undefined);
+    return blindBind(
+        modified(
+            (target, thisArg, [, ...args]) =>
+                pa.then((a) => target(a, ...args)),
+            f
+        ) as F
+    );
 }
 
 const sequence = rightTie;

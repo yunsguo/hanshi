@@ -1,8 +1,7 @@
 import {
     Binary,
+    blindBind,
     curry,
-    defaultedFailable,
-    failable,
     id,
     left,
     partial,
@@ -16,7 +15,36 @@ function add(a: number, b: number, c: number, d: number) {
 }
 
 describe('lib/prelude', () => {
+    describe('blindBind', () => {
+        function countUndefined(
+            a: unknown,
+            b: unknown,
+            c: unknown,
+            d: unknown
+        ): number {
+            return [a, b, c, d].filter((e) => e === undefined).length;
+        }
+        it('should bind a function with undefined and change its signature', () => {
+            const bc1 = blindBind(countUndefined);
+            expect(bc1(1, 2, 3)).toBe(1);
+
+            const bc2 = blindBind(bc1);
+            expect(bc2(4, 5)).toBe(2);
+
+            const bc3 = blindBind(bc2);
+            expect(bc3(6)).toBe(3);
+
+            const bc4 = blindBind(bc3);
+            expect(bc4).toBe(4);
+        });
+        it('should throw with a spread function', () => {
+            const f: Binary<number, number, number> = (...args: number[]) =>
+                args.length;
+            expect(() => blindBind(f)).toThrow();
+        });
+    });
     describe('partial', () => {
+        const inc = (a: number) => a + 1;
         it('should bind a function and change its signature', () => {
             const ba1 = partial(add, 1);
             expect(ba1(1, 2, 3)).toBe(7);
@@ -29,38 +57,14 @@ describe('lib/prelude', () => {
 
             const ba4 = partial(ba3, 4);
             expect(ba4).toBe(10);
+
+            const bi = partial(inc, 5);
+            expect(bi).toBe(6);
         });
         it('should throw with a spread function', () => {
             const f: Binary<number, number, number> = (...args: number[]) =>
                 args.length;
             expect(() => partial(f, 5)).toThrow();
-        });
-    });
-    describe('failable', () => {
-        function test(a: number): number {
-            if (a % 2 === 0) throw a;
-            return a;
-        }
-        const ft = failable(test);
-        it('should silence error', () => {
-            expect(ft(2)).toBe(undefined);
-            expect(ft(3)).toBe(3);
-        });
-    });
-    describe('defaultedFailable', () => {
-        function test(a: number): number {
-            if (a % 2 === 0) throw a;
-            return a;
-        }
-        const ft = defaultedFailable(test, undefined);
-        it('should silence error', () => {
-            expect(ft(2)).toBe(undefined);
-            expect(ft(3)).toBe(3);
-        });
-        it('should return with given value', () => {
-            const d = 6;
-            expect(defaultedFailable(test, d)(6)).toBe(d);
-            expect(defaultedFailable(test, d)(5)).toBe(5);
         });
     });
     describe('partialN', () => {
