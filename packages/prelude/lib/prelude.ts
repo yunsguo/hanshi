@@ -24,10 +24,12 @@ type NPartialApplied<F, Args> = F extends (
 type PartialApplied<F> = NPartialApplied<F, [FirstParameter<F>]>;
 
 function modified<F extends Functional>(
-    apply: Exclude<ProxyHandler<F>['apply'], undefined>,
+    invoke: (f: F, args: any[]) => any,
     f: F
 ): Functional {
-    return new Proxy(f, { apply });
+    return new Proxy(f, {
+        apply: (target, thisArg, argArray) => invoke(target, argArray)
+    });
 }
 
 type Predicate<T> = Unary<T, boolean>;
@@ -163,12 +165,21 @@ function right<A, B>(_: A, b: B): B {
 
 function withConstant<F extends Functional>(f: F, r: ReturnType<F>): F {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    return modified((target, thisArg, argArray) => r, f) as F;
+    return modified(() => r, f) as F;
+}
+
+function chain<G extends Functional, R>(
+    f: Unary<ReturnType<G>, R>,
+    g: G
+): (...args: Parameters<G>) => R {
+    return modified((target, argArray) => f(target(...argArray)), g);
 }
 
 type Unary<A, B> = (a: A) => B;
 
 type Binary<A, B, C> = (a: A, b: B) => C;
+
+type Reducer<A, B> = (a: A, b: B) => B;
 
 type Ternary<A, B, C, D> = (a: A, b: B, c: C) => D;
 
@@ -195,10 +206,12 @@ export {
     left,
     right,
     withConstant,
+    chain,
     Nullary,
     Unary,
     Binary,
     Ternary,
+    Reducer,
     Predicate,
     Assigned,
     MonadicAction

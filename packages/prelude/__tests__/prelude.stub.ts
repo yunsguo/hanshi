@@ -1,6 +1,7 @@
 import {
     Binary,
     blindBind,
+    chain,
     curry,
     id,
     left,
@@ -43,8 +44,8 @@ describe('lib/prelude', () => {
             expect(() => blindBind(f)).toThrow();
         });
     });
+    const inc = (a: number) => a + 1;
     describe('partial', () => {
-        const inc = (a: number) => a + 1;
         it('should bind a function and change its signature', () => {
             const ba1 = partial(add, 1);
             expect(ba1(1, 2, 3)).toBe(7);
@@ -116,12 +117,23 @@ describe('lib/prelude', () => {
             expect(right(1, fixed)).toBe(fixed);
         });
     });
-    describe('withSingularity', () => {
-        it('should return a singularity function that always return the supplied result', () => {
+    describe('withConstant', () => {
+        it('should return a constant function that always return the supplied result', () => {
             const addPrime = withConstant(add, 0);
             expect(addPrime(1, 2, 3, 4)).not.toBe(add(1, 2, 3, 4));
             expect(addPrime(2, 3, 4, 5)).toBe(0);
             expect(addPrime(3, 4, 5, 6)).toBe(0);
+        });
+    });
+    describe('withConstant', () => {
+        it('should return a constant function that always return the supplied result', () => {
+            const addInc = chain(inc, add);
+            expect(addInc(1, 2, 3, 4)).not.toBe(add(1, 2, 3, 4));
+            expect(addInc(2, 3, 4, 5)).toBe(15);
+            expect(addInc(3, 4, 5, 6)).toBe(19);
+            const addString = chain((x) => JSON.stringify(x), add);
+            expect(addString(1, 2, 3, 4)).not.toBe(add(1, 2, 3, 4));
+            expect(addString(2, 3, 4, 5)).toBe('14');
         });
     });
 });

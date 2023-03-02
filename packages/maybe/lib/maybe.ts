@@ -76,7 +76,7 @@ function compose<F extends MonadicAction<Maybe<any>>>(
 ): PartialApplied<F> {
     return blindBind(
         modified(
-            (target, thisArg, [, ...args]) =>
+            (target, [, ...args]) =>
                 pa instanceof Nothing ? nothing : target(pa.a, ...args),
             f
         ) as F

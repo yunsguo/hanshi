@@ -131,7 +131,7 @@ function compose<L, F extends MonadicAction<Either<L, any>>>(
 ): PartialApplied<F> {
     return blindBind(
         modified(
-            (target, thisArg, [, ...args]) =>
+            (target, [, ...args]) =>
                 pa instanceof Left ? pa : target(pa.a, ...args),
             f
         ) as F
