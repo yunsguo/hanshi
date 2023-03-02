@@ -1,28 +1,2 @@
-export {
-    Functional,
-    FirstParameter,
-    blindBind,
-    _,
-    modified,
-    partial,
-    PartialApplied,
-    Prefix,
-    $,
-    partialN,
-    NPartialApplied,
-    curry,
-    id,
-    left,
-    right,
-    withConstant,
-    chain,
-    Nullary,
-    Unary,
-    Binary,
-    Ternary,
-    Reducer,
-    Predicate,
-    Assigned,
-    Terminal
-} from './prelude';
+export * from './prelude';
 export * from './type-class';
