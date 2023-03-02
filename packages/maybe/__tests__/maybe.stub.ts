@@ -29,6 +29,14 @@ describe('lib/maybe', () => {
         const inc = (a: number) => a + 1;
         const dec = (a: number) => a - 1;
         const comp = (a: number) => dec(inc(a));
+        describe('decayable', () => {
+            it('should return with mapped value', () => {
+                const r = Math.random();
+
+                expect(Just.of(r).dmap(id)).toBe(r);
+                expect(Just.of(r).dmap((a) => a + 1)).toBe(r + 1);
+            });
+        });
         describe('fmap', () => {
             it('should return with correct value', () => {
                 expect(fmap(inc, Just.of(1))).toStrictEqual(Just.of(2));

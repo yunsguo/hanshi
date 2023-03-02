@@ -12,6 +12,7 @@
     "test": "lerna run test --stream",
     "lint": "lerna run lint",
     "format": "lerna run format",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "prepublishOnly": "npm i && npm run build && npm test"
   }
 }

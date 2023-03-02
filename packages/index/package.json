@@ -44,6 +44,6 @@
     "dependencies": {
         "@hanshi/either": "latest",
         "@hanshi/maybe": "latest",
-        "@hanshi/prelude": "latest"
+        "@hanshi/prelude": "^0.1.3"
     }
 }

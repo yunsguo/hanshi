@@ -1,9 +1,10 @@
 import {
     FirstParameter,
     Functional,
-    MonadicAction,
     PartialApplied,
+    Terminal,
     Unary,
+    decay as a,
     blindBind,
     id,
     left,
@@ -15,45 +16,53 @@ import {
 type Either<A, B> = Left<A> | Right<B>;
 
 class Left<T> {
-    private constructor(private $: T) {}
+    [a]: T;
+
+    private constructor($: T) {
+        this[a] = $;
+    }
 
     static of<U>(val: U): Left<U> {
         return new Left<U>(val);
     }
 
-    public get a(): T {
-        return this.$;
-    }
-
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     either<R>(f: Unary<T, R>, _: unknown): R {
-        return f(this.$);
+        return f(this[a]);
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
     map<L, R>(f: Unary<T, L>, g: Unary<any, R>): Left<L> {
-        return Left.of(f(this.$));
+        return Left.of(f(this[a]));
+    }
+
+    dmap<R>(f: Unary<T, R>) {
+        return f(this[a]);
     }
 }
 
 class Right<T> {
-    private constructor(private $: T) {}
+    [a]: T;
+
+    private constructor($: T) {
+        this[a] = $;
+    }
 
     static of<U>(val: U): Right<U> {
         return new Right<U>(val);
     }
 
-    public get a(): T {
-        return this.$;
-    }
-
     either<R>(_: unknown, f: Unary<T, R>): R {
-        return f(this.$);
+        return f(this[a]);
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
     map<L, R>(f: Unary<any, L>, g: Unary<T, R>): Right<R> {
-        return Right.of(g(this.$));
+        return Right.of(g(this[a]));
+    }
+
+    dmap<R>(f: Unary<T, R>) {
+        return f(this[a]);
     }
 }
 
@@ -66,7 +75,7 @@ function isLeft<A>(e: Either<A, unknown>): e is Left<A> {
 }
 
 function lefts<A>(es: Either<A, unknown>[]): A[] {
-    return es.filter(isLeft).map((l) => l.a);
+    return es.filter(isLeft).map((l) => l[a]);
 }
 
 function isRight<B>(e: Either<unknown, B>): e is Right<B> {
@@ -74,21 +83,21 @@ function isRight<B>(e: Either<unknown, B>): e is Right<B> {
 }
 
 function rights<A, B>(es: Either<A, B>[]): B[] {
-    return es.filter(isRight).map((e) => e.a);
+    return es.filter(isRight).map((e) => e[a]);
 }
 
-function fromLeft<A>(a: A, e: Either<A, unknown>): A {
-    return e instanceof Left ? e.a : a;
+function fromLeft<A>(defaulted: A, e: Either<A, unknown>): A {
+    return e instanceof Left ? e[a] : defaulted;
 }
 
-function fromRight<B>(b: B, e: Either<unknown, B>): B {
-    return e instanceof Right ? e.a : b;
+function fromRight<B>(defaulted: B, e: Either<unknown, B>): B {
+    return e instanceof Right ? e[a] : defaulted;
 }
 
 function partitionEithers<A, B>(es: Either<A, B>[]): [A[], B[]] {
     return es.reduce(
         ([ls, rs]: [A[], B[]], e) =>
-            e instanceof Left ? [[...ls, e.a], rs] : [ls, [...rs, e.a]],
+            e instanceof Left ? [[...ls, e[a]], rs] : [ls, [...rs, e[a]]],
         [[], []]
     );
 }
@@ -115,7 +124,7 @@ function tie<F extends Functional, L>(
         ? mf
         : ma instanceof Left
         ? ma
-        : Right.of(partial(mf.a, ma.a));
+        : Right.of(partial(mf[a], ma[a]));
 }
 
 const rightTie: <A, B, L>(ma: Either<L, A>, mb: Either<L, B>) => Either<L, B> =
@@ -125,14 +134,14 @@ const leftTie: <A, B, L>(ma: Either<L, A>, mb: Either<L, B>) => Either<L, A> =
     left;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function compose<L, F extends MonadicAction<Either<L, any>>>(
+function compose<L, F extends Terminal<Either<L, any>>>(
     f: F,
     pa: Either<L, FirstParameter<F>>
 ): PartialApplied<F> {
     return blindBind(
         modified(
             (target, [, ...args]) =>
-                pa instanceof Left ? pa : target(pa.a, ...args),
+                pa instanceof Left ? pa : target(pa[a], ...args),
             f
         ) as F
     );

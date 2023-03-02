@@ -40,17 +40,19 @@ function isError(e: unknown): e is Error {
     return Object.prototype.toString.call(e) === errorToString;
 }
 
-class FunctionPredicateError<F extends Functional> extends Error {
+class PredicateError<F> extends Error {
     constructor(
         private f: F,
         private p: Predicate<F>,
         private original: unknown
     ) {
-        super(`Error applying predicate ${p} to function ${f}`);
+        super(`Error applying predicate ${p} to ${f}`);
 
-        Object.setPrototypeOf(this, FunctionPredicateError.prototype);
+        this.name = this.constructor.name;
 
-        Error.captureStackTrace(this, FunctionPredicateError); // capture stack trace of the custom error
+        Object.setPrototypeOf(this, PredicateError.prototype);
+
+        Error.captureStackTrace(this, PredicateError); // capture stack trace of the custom error
         if (isError(original) && original.stack) {
             // append stack trace of original error
             this.stack += `\nCaused by: ${original.stack}`;
@@ -69,20 +71,16 @@ class PartialError<F extends Functional, Args> extends Error {
 
 type Nullary<R> = () => R;
 
-function checkFunctionWithError<F extends Functional>(
-    f: F,
-    p: Predicate<F>,
-    n: Nullary<Error>
-) {
+function checkWithError<F>(f: F, p: Predicate<F>, n: Nullary<Error>) {
     try {
         if (p(f)) throw n();
     } catch (e) {
-        throw new FunctionPredicateError(f, p, e);
+        throw new PredicateError(f, p, e);
     }
 }
 
 function blindBind<F extends Functional>(f: F): PartialApplied<F> {
-    checkFunctionWithError(
+    checkWithError(
         f,
         (f) => f.length <= 0,
         () => new PartialError(f, [])
@@ -101,7 +99,7 @@ function partial<F extends Functional>(
     f: F,
     arg: FirstParameter<F>
 ): PartialApplied<F> {
-    checkFunctionWithError(
+    checkWithError(
         f,
         (f) => f.length <= 0,
         () => new PartialError(f, [arg])
@@ -124,7 +122,7 @@ function partialN<
     F extends Functional,
     Args extends Exclude<Prefix<Parameters<F>>, []>
 >(f: F, args: Args): NPartialApplied<F, Args> {
-    checkFunctionWithError(
+    checkWithError(
         f,
         (f) => f.length <= 0 || args.length > f.length,
         () => new PartialError(f, args)
@@ -142,7 +140,7 @@ class CurryingError<F extends Functional> extends Error {
 function curry<F extends Functional>(
     f: F
 ): Unary<FirstParameter<F>, PartialApplied<F>> {
-    checkFunctionWithError(
+    checkWithError(
         f,
         (f) => f.length < 2,
         () => new CurryingError(f)
@@ -187,9 +185,10 @@ type Assigned<H, F> = F extends (...args: infer Rest) => infer R
     ? (a: H, ...args: Rest) => R
     : never;
 
-type MonadicAction<R> = (...args: any[]) => R;
+type Terminal<R> = (...args: any[]) => R;
 
 export {
+    checkWithError,
     Functional,
     FirstParameter,
     blindBind,
@@ -214,5 +213,5 @@ export {
     Reducer,
     Predicate,
     Assigned,
-    MonadicAction
+    Terminal
 };

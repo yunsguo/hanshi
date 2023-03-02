@@ -1,10 +1,10 @@
 import {
     FirstParameter,
     Functional,
-    MonadicAction,
     PartialApplied,
+    Terminal,
     Unary,
-    _,
+    decay as a,
     blindBind,
     left,
     modified,
@@ -21,10 +21,10 @@ class Nothing {
 const nothing = new Nothing();
 
 class Just<T> {
-    private constructor(private $: T) {}
+    [a]: T;
 
-    public get a(): T {
-        return this.$;
+    private constructor($: T) {
+        this[a] = $;
     }
 
     static of<U>(a: U) {
@@ -32,7 +32,11 @@ class Just<T> {
     }
 
     maybe<U>(b: U, f: Unary<T, U>): U {
-        return f(this.$);
+        return f(this[a]);
+    }
+
+    dmap<R>(f: Unary<T, R>) {
+        return f(this[a]);
     }
 }
 
@@ -46,7 +50,7 @@ function fmap<F extends Functional>(
     f: F,
     fa: Maybe<FirstParameter<F>>
 ): Maybe<PartialApplied<F>> {
-    return fa instanceof Nothing ? nothing : Just.of(partial(f, fa.a));
+    return fa instanceof Nothing ? nothing : Just.of(partial(f, fa[a]));
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -61,7 +65,7 @@ function tie<F extends Functional>(
     ma: Maybe<FirstParameter<F>>
 ): Maybe<PartialApplied<F>> {
     return mf instanceof Just && ma instanceof Just
-        ? Just.of(partial(mf.a, ma.a))
+        ? Just.of(partial(mf[a], ma[a]))
         : nothing;
 }
 
@@ -70,14 +74,14 @@ const rightTie: <A, B>(ma: Maybe<A>, mb: Maybe<B>) => Maybe<B> = right;
 const leftTie: <A, B>(ma: Maybe<A>, mb: Maybe<B>) => Maybe<A> = left;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function compose<F extends MonadicAction<Maybe<any>>>(
+function compose<F extends Terminal<Maybe<any>>>(
     f: F,
     pa: Maybe<FirstParameter<F>>
 ): PartialApplied<F> {
     return blindBind(
         modified(
             (target, [, ...args]) =>
-                pa instanceof Nothing ? nothing : target(pa.a, ...args),
+                pa instanceof Nothing ? nothing : target(pa[a], ...args),
             f
         ) as F
     );

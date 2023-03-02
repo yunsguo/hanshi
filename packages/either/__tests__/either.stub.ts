@@ -91,6 +91,26 @@ describe('lib/either', () => {
         const inc = (a: number) => a + 1;
         const dec = (a: number) => a - 1;
         const comp = (a: number) => dec(inc(a));
+        describe('decayable', () => {
+            it('should return with value mapped', () => {
+                const r = Math.random();
+
+                expect(Right.of(r).dmap(id)).toBe(r);
+                expect(Right.of(r).dmap((a) => a + 1)).toBe(r + 1);
+                expect(Left.of(r).dmap(id)).toBe(r);
+                expect(Left.of(r).dmap((a) => a + 1)).toBe(r + 1);
+            });
+            it('should follow fmap restrictions', () => {
+                expect(fmap(id, Right.of(5))).toStrictEqual(id(Right.of(5)));
+                expect(fmap(id, Left.of(4))).toStrictEqual(id(Left.of(4)));
+                expect(fmap(comp, Right.of(3))).toStrictEqual(
+                    fmap(dec, fmap(inc, Right.of(3)))
+                );
+                expect(fmap(comp, Left.of(2))).toStrictEqual(
+                    fmap(dec, fmap(inc, Left.of(2)))
+                );
+            });
+        });
         describe('fmap', () => {
             it('should return with correct value', () => {
                 expect(fmap(inc, Right.of(1))).toStrictEqual(Right.of(2));

@@ -1,12 +1,14 @@
 import {
     FirstParameter,
     Functional,
-    MonadicAction,
     PartialApplied,
+    Terminal,
     _,
     blindBind,
+    id,
     left,
-    modified
+    modified,
+    partial
 } from '@hanshi/prelude';
 
 /**
@@ -30,7 +32,7 @@ function fmap<F extends Functional>(
     f: F,
     fa: Promise<Awaited<FirstParameter<F>>>
 ): Promise<PartialApplied<F>> {
-    return fa.then(_(_<F>, f));
+    return fa.then(_(partial<F>, f));
 }
 
 /**
@@ -105,16 +107,17 @@ function tie<F extends Functional>(
     pf: Promise<F>,
     pa: Promise<Awaited<FirstParameter<F>>>
 ): Promise<PartialApplied<F>> {
-    return Promise.all([pf, pa]).then(([f, a]) => _(f, a));
+    return Promise.all([pf, pa]).then(([f, a]) => partial(f, a));
 }
 
 function rightTie<A, B>(fa: Promise<A>, fb: Promise<B>): Promise<B> {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    return fa.then(_(left<Promise<B>, A>, fb));
+    return fa.then((a) => fb.then(id));
 }
 
 function leftTie<A, B>(fa: Promise<A>, fb: Promise<B>): Promise<A> {
-    return rightTie(fb, fa);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    return fa.then((a) => fb.then((b) => a));
 }
 
 /**
@@ -153,14 +156,13 @@ function leftTie<A, B>(fa: Promise<A>, fb: Promise<B>): Promise<A> {
  * @param pa
  * @returns
  */
-function compose<R, F extends MonadicAction<Promise<R>>>(
+function compose<R, F extends Terminal<Promise<R>>>(
     f: F,
     pa: Promise<Awaited<FirstParameter<F>>>
 ): PartialApplied<F> {
     return blindBind(
         modified(
-            (target, thisArg, [, ...args]) =>
-                pa.then((a) => target(a, ...args)),
+            (target, [, ...args]) => pa.then((a) => target(a, ...args)),
             f
         ) as F
     );

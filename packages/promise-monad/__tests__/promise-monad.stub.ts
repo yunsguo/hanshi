@@ -4,6 +4,7 @@ import {
     leftTie,
     pure,
     replace,
+    rightTie,
     tie
 } from '../lib/promise-monad';
 
@@ -57,6 +58,13 @@ describe('lib/promise-monad', () => {
             expect(
                 leftTie(Promise.resolve(5), Promise.resolve('a'))
             ).toStrictEqual(Promise.resolve(5));
+        });
+    });
+    describe('rightTie', () => {
+        it('should sequence operations and combine their results', () => {
+            expect(
+                rightTie(Promise.resolve(5), Promise.resolve('a'))
+            ).toStrictEqual(Promise.resolve('a'));
         });
     });
     describe('>>=', () => {
