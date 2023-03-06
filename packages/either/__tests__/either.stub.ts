@@ -1,9 +1,13 @@
-import { id } from '@hanshi/prelude';
+import {
+    defineDefaultedLiftAN,
+    defineDefaultedRightTie,
+    id
+} from '@hanshi/prelude';
 import {
     Either,
     Left,
     Right,
-    compose,
+    warp,
     either,
     fmap,
     fromLeft,
@@ -12,9 +16,12 @@ import {
     isRight,
     lefts,
     partitionEithers,
-    replace,
+    v$,
     rights,
-    tie
+    tie,
+    pure,
+    liftAN,
+    rightTie
 } from '../lib/either';
 
 describe('lib/either', () => {
@@ -127,10 +134,10 @@ describe('lib/either', () => {
                 );
             });
         });
-        describe('replace', () => {
+        describe('v$', () => {
             it('should return with correct value', () => {
-                expect(replace(5, Right.of(1))).toStrictEqual(Right.of(5));
-                expect(replace(4, Left.of(1))).toStrictEqual(Right.of(4));
+                expect(v$(5, Right.of(1))).toStrictEqual(Right.of(5));
+                expect(v$(4, Left.of(1))).toStrictEqual(Left.of(1));
             });
         });
         const add = (a: number, b: number) => a + b;
@@ -147,18 +154,46 @@ describe('lib/either', () => {
                 ).toStrictEqual(Left.of(7));
             });
         });
+        describe('liftAN', () => {
+            it('should return with correct value', () => {
+                const liftAN2 = defineDefaultedLiftAN(pure, tie);
+
+                expect(liftAN(add)(pure(6), pure(7))).toStrictEqual(
+                    liftAN2(add)(pure(6), pure(7))
+                );
+                expect(
+                    liftAN<number, typeof add>(add)(Left.of(6), pure(7))
+                ).toStrictEqual(liftAN2(add)(Left.of(6), pure(7)));
+                expect(
+                    liftAN<number, typeof add>(add)(Left.of(6), Left.of(7))
+                ).toStrictEqual(liftAN2(add)(Left.of(6), Left.of(7)));
+            });
+        });
+        describe('rightTie', () => {
+            it('should return with correct value', () => {
+                const rightTie2 = defineDefaultedRightTie(v$, tie);
+
+                expect(rightTie(pure(6), pure(7))).toStrictEqual(
+                    rightTie2(pure(6), pure(7))
+                );
+                expect(rightTie(pure(6), Left.of(7))).toStrictEqual(
+                    rightTie2(pure(6), Left.of(7))
+                );
+                expect(rightTie(Left.of(6), pure(7))).toStrictEqual(
+                    rightTie2(Left.of(6), pure(7))
+                );
+                expect(rightTie(Left.of(6), Left.of(7))).toStrictEqual(
+                    rightTie2(Left.of(6), Left.of(7))
+                );
+            });
+        });
         const addEither = (a: number, b: number) =>
             a + b === 0 ? Left.of(0) : Right.of(a + b);
-        describe('compose', () => {
+        describe('warp', () => {
             it('should return with correct value', () => {
+                expect(warp(Left.of(6), addEither)).toStrictEqual(Left.of(6));
                 expect(
-                    compose(compose(addEither, Left.of(5)), Left.of(6))
-                ).toStrictEqual(Left.of(6));
-                expect(
-                    compose(compose(addEither, Right.of(5)), Left.of(6))
-                ).toStrictEqual(Left.of(6));
-                expect(
-                    compose(compose(addEither, Right.of(5)), Right.of(6))
+                    warp(Right.of([5, 6] as [number, number]), addEither)
                 ).toStrictEqual(Right.of(11));
             });
         });

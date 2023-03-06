@@ -1,13 +1,16 @@
-import { id } from '@hanshi/prelude';
+import { defineDefaultedLiftAN, defineDefaultedv$, id } from '@hanshi/prelude';
 import {
     Just,
     Nothing,
-    compose,
+    warp,
     fmap,
     maybe,
     nothing,
-    replace,
-    tie
+    v$,
+    tie,
+    pure,
+    liftAN,
+    insert
 } from '../lib/maybe';
 
 describe('lib/maybe', () => {
@@ -53,10 +56,11 @@ describe('lib/maybe', () => {
                 );
             });
         });
-        describe('replace', () => {
+        describe('<$', () => {
             it('should return with correct value', () => {
-                expect(replace(5, Just.of(1))).toStrictEqual(Just.of(5));
-                expect(replace(4, nothing)).toStrictEqual(Just.of(4));
+                const v$2 = defineDefaultedv$(fmap);
+                expect(v$(5, Just.of(1))).toStrictEqual(v$2(5, Just.of(1)));
+                expect(v$(4, nothing)).toStrictEqual(v$2(4, nothing));
             });
         });
         const add = (a: number, b: number) => a + b;
@@ -71,19 +75,34 @@ describe('lib/maybe', () => {
                 );
             });
         });
+        describe('liftAN', () => {
+            it('should return with correct value', () => {
+                const liftAN2 = defineDefaultedLiftAN(pure, tie);
+                expect(liftAN(add)(pure(1), pure(2))).toStrictEqual(
+                    liftAN2(add)(pure(1), pure(2))
+                );
+                expect(liftAN(add)(pure(1), nothing)).toStrictEqual(
+                    liftAN2(add)(pure(1), nothing)
+                );
+            });
+        });
         const addMaybe = (a: number, b: number) =>
             a + b === 0 ? nothing : Just.of(a + b);
-        describe('compose', () => {
+        describe('>>=', () => {
             it('should return with correct value', () => {
-                expect(compose(compose(addMaybe, nothing), nothing)).toBe(
-                    nothing
+                expect(warp(nothing, addMaybe)).toBe(nothing);
+                expect(warp(Just.of([5, 10]), addMaybe)).toStrictEqual(
+                    Just.of(15)
                 );
-                expect(compose(compose(addMaybe, Just.of(5)), nothing)).toBe(
-                    nothing
+            });
+        });
+        describe('>>', () => {
+            it('should return with correct value', () => {
+                expect(insert(nothing, Just.of(5))).toBe(nothing);
+                expect(insert(Just.of(5), nothing)).toBe(nothing);
+                expect(insert(Just.of(5), Just.of(11))).toStrictEqual(
+                    Just.of(11)
                 );
-                expect(
-                    compose(compose(addMaybe, Just.of(5)), Just.of(6))
-                ).toStrictEqual(Just.of(11));
             });
         });
     });

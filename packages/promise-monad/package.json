@@ -1,6 +1,6 @@
 {
     "name": "@hanshi/promise-monad",
-    "version": "0.1.2",
+    "version": "0.1.3",
     "description": "> TODO: description",
     "author": "Guo, Yunsheng <yunsguo@gmail.com>",
     "homepage": "https://github.com/yunsguo/hanshi#readme",
@@ -43,7 +43,7 @@
         "typescript": "^4.8.4"
     },
     "dependencies": {
-        "@hanshi/prelude": "^0.1.3"
+        "@hanshi/prelude": "^0.1.4"
     },
     "eslintConfig": {
         "extends": "@hanshi"

@@ -1,11 +1,13 @@
+import { defineDefaultedLiftAN, defineDefaultedv$, id } from '@hanshi/prelude';
 import {
-    compose as comp,
+    warp,
     fmap,
     leftTie,
     pure,
-    replace,
+    v$,
     rightTie,
-    tie
+    tie,
+    liftAN
 } from '../lib/promise-monad';
 
 function add(a: number, b: number, c: number, d: number): Promise<number> {
@@ -28,17 +30,17 @@ describe('lib/promise-monad', () => {
             expect(ba4).toBe(10);
         });
     });
-    describe('replace', () => {
+    describe('v$', () => {
         it('should return with correct value', () => {
-            expect(replace(5, Promise.resolve(1))).toStrictEqual(
-                Promise.resolve(5)
-            );
-            expect(replace(4, Promise.reject(1))).toStrictEqual(
-                Promise.resolve(4)
+            const v$2 = defineDefaultedv$(fmap);
+            expect(v$(5, Promise.resolve(1))).toStrictEqual(v$2(5, pure(1)));
+
+            expect(v$(4, Promise.reject(1)).catch(id)).toStrictEqual(
+                v$(4, Promise.reject(1)).catch(id)
             );
         });
     });
-    describe('<*>/tie', () => {
+    describe('<*>', () => {
         it('should sequence operations and combine their results', async () => {
             const ba1 = await tie(pure(add), Promise.resolve(1));
             expect(await ba1(1, 2, 3)).toBe(7);
@@ -53,6 +55,19 @@ describe('lib/promise-monad', () => {
             expect(ba4).toBe(10);
         });
     });
+    describe('liftAN', () => {
+        it('should sequence operations and combine their results', async () => {
+            const liftAN2 = defineDefaultedLiftAN(pure, tie);
+            const args = [1, 2, 3, 4].map(pure) as [
+                Promise<number>,
+                Promise<number>,
+                Promise<number>,
+                Promise<number>
+            ];
+            expect(liftAN(add)(...args)).toStrictEqual(liftAN2(add)(...args));
+        });
+    });
+
     describe('leftTie', () => {
         it('should sequence operations and combine their results', () => {
             expect(
@@ -68,18 +83,18 @@ describe('lib/promise-monad', () => {
         });
     });
     describe('>>=', () => {
-        it('Sequentially compose two actions', async () => {
-            const ba1 = comp(add, Promise.resolve(1));
-            expect(await ba1(1, 2, 3)).toBe(7);
-
-            const ba2 = comp(ba1, Promise.resolve(2));
-            expect(await ba2(4, 5)).toBe(12);
-
-            const ba3 = comp(ba2, Promise.resolve(3));
-            expect(await ba3(6)).toBe(12);
-
-            const ba4 = comp(ba3, Promise.resolve(4));
-            expect(await ba4).toBe(10);
+        it('Sequentially wrap two actions', async () => {
+            expect(
+                await warp(
+                    Promise.resolve([1, 1, 2, 3] as [
+                        number,
+                        number,
+                        number,
+                        number
+                    ]),
+                    add
+                )
+            ).toBe(7);
         });
     });
 });

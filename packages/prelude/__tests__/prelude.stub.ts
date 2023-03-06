@@ -8,6 +8,7 @@ import {
     partial,
     partialN,
     right,
+    swapped,
     withConstant
 } from '../lib/prelude';
 
@@ -125,8 +126,8 @@ describe('lib/prelude', () => {
             expect(addPrime(3, 4, 5, 6)).toBe(0);
         });
     });
-    describe('withConstant', () => {
-        it('should return a constant function that always return the supplied result', () => {
+    describe('chain', () => {
+        it('should return a function that chains two functions together', () => {
             const addInc = chain(inc, add);
             expect(addInc(1, 2, 3, 4)).not.toBe(add(1, 2, 3, 4));
             expect(addInc(2, 3, 4, 5)).toBe(15);
@@ -134,6 +135,13 @@ describe('lib/prelude', () => {
             const addString = chain((x) => JSON.stringify(x), add);
             expect(addString(1, 2, 3, 4)).not.toBe(add(1, 2, 3, 4));
             expect(addString(2, 3, 4, 5)).toBe('14');
+        });
+    });
+    describe('swapped', () => {
+        const liner = (a: number, b: number) => a * 7 + b;
+        it('should return a function that swap the two parameters', () => {
+            const [a, b] = [...Array(2).keys()].map((_) => Math.random());
+            expect(swapped(liner)(a, b)).toStrictEqual(liner(b, a));
         });
     });
 });

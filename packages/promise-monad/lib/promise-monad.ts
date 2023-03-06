@@ -4,8 +4,6 @@ import {
     PartialApplied,
     Terminal,
     _,
-    blindBind,
-    id,
     left,
     modified,
     partial
@@ -32,7 +30,7 @@ function fmap<F extends Functional>(
     f: F,
     fa: Promise<Awaited<FirstParameter<F>>>
 ): Promise<PartialApplied<F>> {
-    return fa.then(_(partial<F>, f));
+    return fa.then((a) => partial<F>(f, a));
 }
 
 /**
@@ -41,7 +39,7 @@ function fmap<F extends Functional>(
  * @param pb
  * @returns
  */
-function replace<A, B>(a: A, pb: Promise<B>): Promise<A> {
+function v$<A, B>(a: A, pb: Promise<B>): Promise<A> {
     const rep = _(left<A, B>, a);
     return pb.then(rep, rep);
 }
@@ -72,7 +70,7 @@ function replace<A, B>(a: A, pb: Promise<B>): Promise<A> {
  * @param a
  * @returns
  */
-function pure<A>(a: A): Promise<A> {
+function pure<A>(a: A) {
     return Promise.resolve(a);
 }
 
@@ -110,9 +108,23 @@ function tie<F extends Functional>(
     return Promise.all([pf, pa]).then(([f, a]) => partial(f, a));
 }
 
+type PromiseMap<T extends unknown[]> = T extends [infer Head, ...infer Tail]
+    ? [Promise<Head>, ...PromiseMap<Tail>]
+    : [];
+
+type Lifted<F extends Functional> = (
+    ...args: PromiseMap<Parameters<F>>
+) => Promise<ReturnType<F>>;
+
+const liftAN = <F extends Functional>(f: F): Lifted<F> =>
+    modified(
+        (target, args) => Promise.all(args).then((as) => target(...as)),
+        f
+    );
+
 function rightTie<A, B>(fa: Promise<A>, fb: Promise<B>): Promise<B> {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    return fa.then((a) => fb.then(id));
+    return fa.then((a) => fb);
 }
 
 function leftTie<A, B>(fa: Promise<A>, fb: Promise<B>): Promise<A> {
@@ -156,18 +168,13 @@ function leftTie<A, B>(fa: Promise<A>, fb: Promise<B>): Promise<A> {
  * @param pa
  * @returns
  */
-function compose<R, F extends Terminal<Promise<R>>>(
-    f: F,
-    pa: Promise<Awaited<FirstParameter<F>>>
-): PartialApplied<F> {
-    return blindBind(
-        modified(
-            (target, [, ...args]) => pa.then((a) => target(a, ...args)),
-            f
-        ) as F
-    );
+function warp<R, F extends Terminal<Promise<R>>>(
+    pa: Promise<Awaited<Parameters<F>>>,
+    f: F
+): ReturnType<F> {
+    return pa.then((args) => f(...args)) as ReturnType<F>;
 }
 
-const sequence = rightTie;
+const insert = rightTie;
 
-export { fmap, replace, pure, tie, rightTie, leftTie, compose, sequence };
+export { fmap, insert, leftTie, liftAN, pure, rightTie, tie, v$, warp };

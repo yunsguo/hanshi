@@ -32,7 +32,7 @@ function modified<F extends Functional>(
     });
 }
 
-type Predicate<T> = Unary<T, boolean>;
+type Predicate<T = any> = Unary<T, boolean>;
 
 const errorToString = Object.prototype.toString.call(new Error());
 
@@ -53,6 +53,7 @@ class PredicateError<F> extends Error {
         Object.setPrototypeOf(this, PredicateError.prototype);
 
         Error.captureStackTrace(this, PredicateError); // capture stack trace of the custom error
+
         if (isError(original) && original.stack) {
             // append stack trace of original error
             this.stack += `\nCaused by: ${original.stack}`;
@@ -69,7 +70,7 @@ class PartialError<F extends Functional, Args> extends Error {
     }
 }
 
-type Nullary<R> = () => R;
+type Nullary<R = any> = () => R;
 
 function checkWithError<F>(f: F, p: Predicate<F>, n: Nullary<Error>) {
     try {
@@ -111,23 +112,28 @@ type Prefix<T extends unknown[]> = T extends [...infer Init, infer Last]
     ? Prefix<Init> | [...Init, Last]
     : [];
 
-function $<
-    F extends Functional,
-    Args extends Exclude<Prefix<Parameters<F>>, []>
->(f: F, args: Args): NPartialApplied<F, Args> {
+type PartialParameters<F extends Functional> = Exclude<
+    Prefix<Parameters<F>>,
+    []
+>;
+
+function __<F extends Functional, Args extends PartialParameters<F>>(
+    f: F,
+    args: Args
+): NPartialApplied<F, Args> {
     return f.length === args.length ? f(...args) : f.bind(null, ...args);
 }
 
-function partialN<
-    F extends Functional,
-    Args extends Exclude<Prefix<Parameters<F>>, []>
->(f: F, args: Args): NPartialApplied<F, Args> {
+function partialN<F extends Functional, Args extends PartialParameters<F>>(
+    f: F,
+    args: Args
+): NPartialApplied<F, Args> {
     checkWithError(
         f,
         (f) => f.length <= 0 || args.length > f.length,
         () => new PartialError(f, args)
     );
-    return $(f, args);
+    return __(f, args);
 }
 
 class CurryingError<F extends Functional> extends Error {
@@ -173,45 +179,48 @@ function chain<G extends Functional, R>(
     return modified((target, argArray) => f(target(...argArray)), g);
 }
 
-type Unary<A, B> = (a: A) => B;
+function swapped<F extends Binary>(
+    f: F
+): (arg0: Parameters<F>[1], arg1: FirstParameter<F>) => ReturnType<F> {
+    return modified((g, [a, b]) => g(b, a), f);
+}
 
-type Binary<A, B, C> = (a: A, b: B) => C;
+type Unary<A = any, B = any> = (a: A) => B;
 
-type Reducer<A, B> = (a: A, b: B) => B;
+type Binary<A = any, B = any, C = any> = (a: A, b: B) => C;
 
-type Ternary<A, B, C, D> = (a: A, b: B, c: C) => D;
+type Reducer<A = any, B = any> = (a: A, b: B) => B;
 
-type Assigned<H, F> = F extends (...args: infer Rest) => infer R
-    ? (a: H, ...args: Rest) => R
-    : never;
+type Ternary<A = any, B = any, C = any, D = any> = (a: A, b: B, c: C) => D;
 
 type Terminal<R> = (...args: any[]) => R;
 
 export {
-    checkWithError,
-    Functional,
+    Binary,
     FirstParameter,
-    blindBind,
-    _,
-    modified,
-    partial,
-    PartialApplied,
-    Prefix,
-    $,
-    partialN,
+    Functional,
     NPartialApplied,
+    Nullary,
+    PartialApplied,
+    PartialParameters,
+    Predicate,
+    Prefix,
+    Reducer,
+    Terminal,
+    Ternary,
+    Unary,
+    _,
+    __,
+    blindBind,
+    chain,
+    checkWithError,
     curry,
     id,
     left,
+    modified,
+    partial,
+    partialN,
     right,
-    withConstant,
-    chain,
-    Nullary,
-    Unary,
-    Binary,
-    Ternary,
-    Reducer,
-    Predicate,
-    Assigned,
-    Terminal
+    swapped,
+    withConstant
 };

@@ -12,30 +12,4 @@ export {
     rights
 } from '@hanshi/either';
 export { Just, Maybe, Nothing, maybe, nothing } from '@hanshi/maybe';
-export {
-    $,
-    Assigned,
-    Binary,
-    FirstParameter,
-    Functional,
-    NPartialApplied,
-    Nullary,
-    PartialApplied,
-    Predicate,
-    Prefix,
-    Reducer,
-    Terminal,
-    Ternary,
-    Unary,
-    _,
-    blindBind,
-    chain,
-    curry,
-    id,
-    left,
-    modified,
-    partial,
-    partialN,
-    right,
-    withConstant
-} from '@hanshi/prelude';
+export * from '@hanshi/prelude';

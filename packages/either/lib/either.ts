@@ -5,15 +5,13 @@ import {
     Terminal,
     Unary,
     decay as a,
-    blindBind,
     id,
-    left,
     modified,
     partial,
-    right
+    swapped
 } from '@hanshi/prelude';
 
-type Either<A, B> = Left<A> | Right<B>;
+type Either<A, B = unknown> = Left<A> | Right<B>;
 
 class Left<T> {
     [a]: T;
@@ -109,9 +107,8 @@ function fmap<F extends Functional, L = unknown>(
     return e.map(id<L>, (r) => partial(f, r));
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function replace<A, B, L>(a: A, fb: Either<L, B>): Either<L, A> {
-    return Right.of(a);
+function v$<A, B, L>(a: A, fb: Either<L, B>): Either<L, A> {
+    return fb instanceof Left ? fb : Right.of(a);
 }
 
 const pure = Right.of;
@@ -127,49 +124,60 @@ function tie<F extends Functional, L>(
         : Right.of(partial(mf[a], ma[a]));
 }
 
-const rightTie: <A, B, L>(ma: Either<L, A>, mb: Either<L, B>) => Either<L, B> =
-    right;
+type EitherMap<A, Ts extends unknown[]> = Ts extends [infer Head, ...infer Tail]
+    ? [Either<A, Head>, ...EitherMap<A, Tail>]
+    : [];
 
-const leftTie: <A, B, L>(ma: Either<L, A>, mb: Either<L, B>) => Either<L, A> =
-    left;
+type Lifted<A, F extends Functional> = (
+    ...args: EitherMap<A, Parameters<F>>
+) => Either<A, ReturnType<F>>;
+
+const liftAN = <A, F extends Functional>(f: F): Lifted<A, F> =>
+    modified((target, args) => {
+        const foundLeft = args.find(isLeft);
+        if (foundLeft !== undefined) return foundLeft;
+        return Right.of(target(...args.map((e) => e[a])));
+    }, f);
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function compose<L, F extends Terminal<Either<L, any>>>(
-    f: F,
-    pa: Either<L, FirstParameter<F>>
-): PartialApplied<F> {
-    return blindBind(
-        modified(
-            (target, [, ...args]) =>
-                pa instanceof Left ? pa : target(pa[a], ...args),
-            f
-        ) as F
-    );
+const _rightTie = (ma: any, mb: any) => (ma instanceof Left ? ma : mb);
+
+const rightTie: <A, B, L>(ma: Either<L, A>, mb: Either<L, B>) => Either<L, B> =
+    _rightTie;
+
+const leftTie: <A, B, L>(ma: Either<L, A>, mb: Either<L, B>) => Either<L, A> =
+    swapped(_rightTie);
+
+function warp<L, F extends Terminal<Either<L>>>(
+    margs: Either<L, Parameters<F>>,
+    f: F
+): ReturnType<F> {
+    return margs instanceof Left
+        ? (margs as ReturnType<F>)
+        : (margs.dmap((args) => f(...args)) as ReturnType<F>);
 }
 
-const rightCompose: typeof rightTie = right;
-
-const leftCompose: typeof leftTie = left;
+const insert = rightTie;
 
 export {
     Either,
     Left,
     Right,
     either,
-    isLeft,
-    lefts,
-    isRight,
-    rights,
+    fmap,
     fromLeft,
     fromRight,
-    partitionEithers,
-    fmap,
-    replace,
-    pure,
-    tie,
-    rightTie,
+    insert,
+    isLeft,
+    isRight,
     leftTie,
-    compose,
-    rightCompose,
-    leftCompose
+    lefts,
+    partitionEithers,
+    pure,
+    rightTie,
+    rights,
+    tie,
+    v$,
+    warp,
+    liftAN
 };

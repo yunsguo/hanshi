@@ -1,41 +1,35 @@
-import { FirstParameter, Unary, checkWithError, partial } from './prelude';
+// For pattern matching reasons, any is used in the type definitions
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import {
+    Binary,
+    Functional,
+    Unary,
+    _,
+    id,
+    left,
+    modified,
+    partial
+} from './prelude';
 
-const decay: unique symbol = Symbol();
+const defineDefaultedv$ = (fmap: Binary) => (a: any, fb: any) =>
+    fmap(_(left, a), fb);
 
-class DmapDecayableError<T> extends Error {
-    constructor(private d: T, private original?: Error) {
-        super(`Are you sure ${JSON.stringify(d)} is of typeclass decayable?`);
+const defineDefaultedLiftAN = (pure: Unary, tie: Binary) => (f: Functional) =>
+    modified((target, args) => args.reduce(tie, pure(target)), f);
 
-        this.name = this.constructor.name;
+const defineDefaultedTie = (liftAN: Unary) => (ff: any, fa: any) =>
+    liftAN(partial)(ff, fa);
 
-        Object.setPrototypeOf(this, DmapDecayableError.prototype);
+const defineDefaultedRightTie = (v$: Binary, tie: Binary) => (u: any, v: any) =>
+    tie(v$(id, u), v);
 
-        Error.captureStackTrace(this, DmapDecayableError); // capture stack trace of the custom error
-        if (original && original.stack) {
-            // append stack trace of original error
-            this.stack += `\nCaused by: ${original.stack}`;
-        }
-    }
-}
+const defineDefaultedLeftTie = (liftAN: Unary) => (u: any, v: any) =>
+    liftAN(left)(u, v);
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const dmap = <F extends Unary<any, any>>(f: F, d: unknown) => {
-    try {
-        checkWithError(
-            d,
-            (d) => ['function', 'object'].every((t) => typeof d !== t),
-            () => new DmapDecayableError(d)
-        );
-        return partial(f, (d as { [decay]: FirstParameter<F> })[decay]);
-    } catch (e) {
-        if (
-            e instanceof Error &&
-            (/.*Cannot read properties of.*/.test(e.message) ||
-                /.*undefined.*/.test(e.message))
-        )
-            throw new DmapDecayableError(d, e);
-        else throw e;
-    }
+export {
+    defineDefaultedLeftTie,
+    defineDefaultedLiftAN,
+    defineDefaultedRightTie,
+    defineDefaultedTie,
+    defineDefaultedv$
 };
-
-export { decay, dmap };
