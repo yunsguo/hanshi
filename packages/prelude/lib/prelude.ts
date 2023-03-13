@@ -185,6 +185,13 @@ function swapped<F extends Binary>(
     return modified((g, [a, b]) => g(b, a), f);
 }
 
+const cons = <A>(a: A, as: A[]): A[] => [a, ...as];
+
+const unspreaded =
+    <F extends Functional>(f: F): Unary<Parameters<F>, ReturnType<F>> =>
+    (args) =>
+        f(...args);
+
 type Unary<A = any, B = any> = (a: A) => B;
 
 type Binary<A = any, B = any, C = any> = (a: A, b: B) => C;
@@ -214,6 +221,7 @@ export {
     blindBind,
     chain,
     checkWithError,
+    cons,
     curry,
     id,
     left,
@@ -222,5 +230,6 @@ export {
     partialN,
     right,
     swapped,
+    unspreaded,
     withConstant
 };

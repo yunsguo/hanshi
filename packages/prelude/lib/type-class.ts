@@ -5,6 +5,7 @@ import {
     Functional,
     Unary,
     _,
+    cons,
     id,
     left,
     modified,
@@ -26,10 +27,20 @@ const defineDefaultedRightTie = (v$: Binary, tie: Binary) => (u: any, v: any) =>
 const defineDefaultedLeftTie = (liftAN: Unary) => (u: any, v: any) =>
     liftAN(left)(u, v);
 
+const defineDefaultedSequenceA = (pure: Unary, fmap: Binary, tie: Binary) => {
+    const seqneuceA: Unary = (fa: any[]) => {
+        if (fa.length === 0) return pure(fa);
+        const [x, ...xs] = fa;
+        return tie(fmap(cons, x), seqneuceA(xs));
+    };
+    return seqneuceA;
+};
+
 export {
     defineDefaultedLeftTie,
     defineDefaultedLiftAN,
     defineDefaultedRightTie,
+    defineDefaultedSequenceA,
     defineDefaultedTie,
     defineDefaultedv$
 };

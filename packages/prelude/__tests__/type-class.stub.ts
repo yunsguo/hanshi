@@ -11,6 +11,7 @@ import {
     defineDefaultedLeftTie,
     defineDefaultedLiftAN,
     defineDefaultedRightTie,
+    defineDefaultedSequenceA,
     defineDefaultedTie,
     defineDefaultedv$
 } from '../lib/type-class';
@@ -28,7 +29,7 @@ const replace2 = defineDefaultedv$(fmap) as <A, B>(a: A, ab: B[]) => A[];
 const pure = <T>(a: T) => [a];
 
 const tie = <F extends Functional>(af: F[], aa: FirstParameter<F>[]) =>
-    aa.flatMap((a) => af.flatMap((f) => partial(f, a)));
+    aa.flatMap((a) => af.map((f) => partial(f, a)));
 
 const liftAN = <F extends Functional>(f: F) =>
     modified(
@@ -57,6 +58,8 @@ const leftTie = <A, B>(as: A[], bs: B[]) =>
     bs.flatMap((b) => as.flatMap((a) => left(a, b)));
 
 const leftTie2 = defineDefaultedLeftTie(liftAN2);
+
+const seqneuceA = defineDefaultedSequenceA(pure, fmap, tie2);
 
 const NArrayRandom = (n: number): number[] =>
     [...Array(n).keys()].map((a) => Math.random());
@@ -111,6 +114,26 @@ describe('lib/type-class', () => {
             equivenlent(leftTie2, leftTie, [
                 NArrayRandom(NRandom(2, 10)),
                 NArrayRandom(NRandom(2, 10))
+            ]);
+        });
+    });
+    describe('sequenceA', () => {
+        it('should provide a correct implentation', () => {
+            expect(
+                seqneuceA([
+                    [1, 2, 3],
+                    [4, 5, 6]
+                ])
+            ).toStrictEqual([
+                [1, 4],
+                [2, 4],
+                [3, 4],
+                [1, 5],
+                [2, 5],
+                [3, 5],
+                [1, 6],
+                [2, 6],
+                [3, 6]
             ]);
         });
     });

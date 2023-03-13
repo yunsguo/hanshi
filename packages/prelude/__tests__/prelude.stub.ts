@@ -2,6 +2,7 @@ import {
     Binary,
     blindBind,
     chain,
+    cons,
     curry,
     id,
     left,
@@ -9,6 +10,7 @@ import {
     partialN,
     right,
     swapped,
+    unspreaded,
     withConstant
 } from '../lib/prelude';
 
@@ -142,6 +144,18 @@ describe('lib/prelude', () => {
         it('should return a function that swap the two parameters', () => {
             const [a, b] = [...Array(2).keys()].map((_) => Math.random());
             expect(swapped(liner)(a, b)).toStrictEqual(liner(b, a));
+        });
+    });
+    describe('cons', () => {
+        it('should return an array with head and tail in the proper place', () => {
+            expect(cons(5, [1, 2, 3])).toStrictEqual([5, 1, 2, 3]);
+            expect(cons(5, [])).toStrictEqual([5]);
+        });
+    });
+    describe('unspread', () => {
+        it('should return function as if its arguments were consolidated into a single array', () => {
+            expect(unspreaded(add)([1,2,3,4])).toBe(10);
+            expect(unspreaded(add)([7,8,9,0])).toBe(24);
         });
     });
 });
