@@ -5,42 +5,38 @@ import {
     Functional,
     Unary,
     _,
-    cons,
     id,
     left,
-    modified,
-    partial
+    partial,
+    partialCurried,
+    proxied
 } from './prelude';
 
-const defineDefaultedv$ = (fmap: Binary) => (a: any, fb: any) =>
+const defineReplace = (fmap: Binary) => (a: any, fb: any) =>
     fmap(_(left, a), fb);
 
-const defineDefaultedLiftAN = (pure: Unary, tie: Binary) => (f: Functional) =>
-    modified((target, args) => args.reduce(tie, pure(target)), f);
+const defineLiftAN = (pure: Unary, tie: Binary) => (f: Functional) =>
+    proxied((target, args) => args.reduce(tie, pure(target)), f);
 
-const defineDefaultedTie = (liftAN: Unary) => (ff: any, fa: any) =>
+const defineTie = (liftAN: Unary) => (ff: any, fa: any) =>
     liftAN(partial)(ff, fa);
 
-const defineDefaultedRightTie = (v$: Binary, tie: Binary) => (u: any, v: any) =>
-    tie(v$(id, u), v);
+const defineRightTie = (replace: Binary, tie: Binary) => (u: any, v: any) =>
+    tie(replace(id, u), v);
 
-const defineDefaultedLeftTie = (liftAN: Unary) => (u: any, v: any) =>
-    liftAN(left)(u, v);
+const defineLeftTie = (liftAN: Unary) => (u: any, v: any) => liftAN(left)(u, v);
 
-const defineDefaultedSequenceA = (pure: Unary, fmap: Binary, tie: Binary) => {
-    const seqneuceA: Unary = (fa: any[]) => {
-        if (fa.length === 0) return pure(fa);
-        const [x, ...xs] = fa;
-        return tie(fmap(cons, x), seqneuceA(xs));
-    };
-    return seqneuceA;
-};
+const defineTraverse = (fmap: Binary, seqneuceA: Unary) => (f: any, ta: any) =>
+    seqneuceA(fmap(f, ta));
+
+const defineSequenceA = (traverse: Binary) => partialCurried(traverse)(id);
 
 export {
-    defineDefaultedLeftTie,
-    defineDefaultedLiftAN,
-    defineDefaultedRightTie,
-    defineDefaultedSequenceA,
-    defineDefaultedTie,
-    defineDefaultedv$
+    defineLeftTie,
+    defineLiftAN,
+    defineReplace,
+    defineRightTie,
+    defineSequenceA,
+    defineTie,
+    defineTraverse
 };

@@ -2,18 +2,20 @@ import {
     FirstParameter,
     Functional,
     PartialApplied,
+    Unary,
+    cons,
     left,
-    modified,
     partial,
+    proxied,
     right
 } from '../lib/prelude';
 import {
-    defineDefaultedLeftTie,
-    defineDefaultedLiftAN,
-    defineDefaultedRightTie,
-    defineDefaultedSequenceA,
-    defineDefaultedTie,
-    defineDefaultedv$
+    defineLeftTie,
+    defineLiftAN,
+    defineReplace,
+    defineRightTie,
+    defineTie,
+    defineTraverse
 } from '../lib/type-class';
 
 const fmap = <F extends Functional>(
@@ -21,10 +23,9 @@ const fmap = <F extends Functional>(
     aa: FirstParameter<F>[]
 ): PartialApplied<F>[] => aa.map((a) => partial(f, a));
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const v$ = <A, B>(a: A, bs: B[]): A[] => bs.map((b) => a);
+const v$ = <A, B>(a: A, bs: B[]): A[] => bs.map(() => a);
 
-const replace2 = defineDefaultedv$(fmap) as <A, B>(a: A, ab: B[]) => A[];
+const replace2 = defineReplace(fmap) as <A, B>(a: A, ab: B[]) => A[];
 
 const pure = <T>(a: T) => [a];
 
@@ -32,7 +33,7 @@ const tie = <F extends Functional>(af: F[], aa: FirstParameter<F>[]) =>
     aa.flatMap((a) => af.map((f) => partial(f, a)));
 
 const liftAN = <F extends Functional>(f: F) =>
-    modified(
+    proxied(
         (target, args) =>
             args
                 .reduce(
@@ -45,24 +46,33 @@ const liftAN = <F extends Functional>(f: F) =>
                 .map((as) => target(...as)),
         f
     );
-const liftAN2 = defineDefaultedLiftAN(pure, tie);
+const liftAN2 = defineLiftAN(pure, tie);
 
-const tie2 = defineDefaultedTie(liftAN2);
+const tie2 = defineTie(liftAN2);
 
 const rightTie = <A, B>(as: A[], bs: B[]) =>
     bs.flatMap((b) => as.flatMap((a) => right(a, b)));
 
-const rightTie2 = defineDefaultedRightTie(replace2, tie2);
+const rightTie2 = defineRightTie(replace2, tie2);
 
 const leftTie = <A, B>(as: A[], bs: B[]) =>
     bs.flatMap((b) => as.flatMap((a) => left(a, b)));
 
-const leftTie2 = defineDefaultedLeftTie(liftAN2);
+const leftTie2 = defineLeftTie(liftAN2);
 
-const seqneuceA = defineDefaultedSequenceA(pure, fmap, tie2);
+const seqneuceA = (() => {
+    const seqneuceA: Unary = (fa) => {
+        if (fa.length === 0) return pure(fa);
+        const [x, ...xs] = fa;
+        return tie(fmap(cons, x), seqneuceA(xs));
+    };
+    return seqneuceA;
+})();
+
+const traverse = defineTraverse(fmap, seqneuceA);
 
 const NArrayRandom = (n: number): number[] =>
-    [...Array(n).keys()].map((a) => Math.random());
+    [...Array(n).keys()].map(() => Math.random());
 
 const NRandom = (l: number, u: number): number =>
     Math.floor(Math.random() * (u - l)) + l;
@@ -86,7 +96,7 @@ describe('lib/type-class', () => {
             equivenlent(
                 liftAN2(linear),
                 liftAN(linear),
-                [...Array(3).keys()].map((_) => NArrayRandom(NRandom(1, 10)))
+                [...Array(3).keys()].map(() => NArrayRandom(NRandom(1, 10)))
             );
         });
     });
@@ -134,6 +144,13 @@ describe('lib/type-class', () => {
                 [1, 6],
                 [2, 6],
                 [3, 6]
+            ]);
+        });
+    });
+    describe('traverse', () => {
+        it('should provide a correct implentation', () => {
+            expect(traverse(pure, [1, 2, 3, 4, 5, 6])).toStrictEqual([
+                [1, 2, 3, 4, 5, 6]
             ]);
         });
     });

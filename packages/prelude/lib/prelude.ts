@@ -1,10 +1,24 @@
 // For pattern matching reasons, any is used in the type definitions
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { EOL } from 'os';
 
+/**
+ * The umbrella type for any function that can be invoked or partially applied.
+ */
 type Functional = (...args: any[]) => any;
 
 type FirstParameter<F> = F extends (...args: [infer Head, ...any[]]) => any
     ? Head
+    : never;
+
+type SecondParameter<F> = F extends (
+    ...args: [any, infer Second, ...any[]]
+) => any
+    ? Second
+    : never;
+
+type LastParameter<F> = F extends (...args: [...any[], infer Last]) => any
+    ? Last
     : never;
 
 type NPartialApplied<F, Args> = F extends (
@@ -23,7 +37,7 @@ type NPartialApplied<F, Args> = F extends (
 
 type PartialApplied<F> = NPartialApplied<F, [FirstParameter<F>]>;
 
-function modified<F extends Functional>(
+function proxied<F extends Functional>(
     invoke: (f: F, args: any[]) => any,
     f: F
 ): Functional {
@@ -46,27 +60,30 @@ class PredicateError<F> extends Error {
         private p: Predicate<F>,
         private original: unknown
     ) {
-        super(`Error applying predicate ${p} to ${f}`);
+        super(`failed applying predicate ${p} to ${f}`);
 
         this.name = this.constructor.name;
 
         Object.setPrototypeOf(this, PredicateError.prototype);
 
-        Error.captureStackTrace(this, PredicateError); // capture stack trace of the custom error
+        Error.captureStackTrace(this, PredicateError);
 
-        if (isError(original) && original.stack) {
-            // append stack trace of original error
-            this.stack += `\nCaused by: ${original.stack}`;
-        }
+        if (isError(original) && original.stack)
+            this.stack += EOL + `Caused by: ${original.stack}`;
     }
 }
 
-class PartialError<F extends Functional, Args> extends Error {
+class ArityError<F extends Functional, Args> extends Error {
     constructor(private target: F, private args: Args) {
         super(
-            `${target} with arity of ${target.length} can not be partially applied by ${args}. `
+            args === undefined
+                ? `${target} with arity of ${target.length} can not be partially applied. `
+                : `${target} with arity of ${target.length} can not be partially applied by ${args}. `
         );
+
         this.name = this.constructor.name;
+
+        Object.setPrototypeOf(this, ArityError.prototype);
     }
 }
 
@@ -80,15 +97,6 @@ function checkWithError<F>(f: F, p: Predicate<F>, n: Nullary<Error>) {
     }
 }
 
-function blindBind<F extends Functional>(f: F): PartialApplied<F> {
-    checkWithError(
-        f,
-        (f) => f.length <= 0,
-        () => new PartialError(f, [])
-    );
-    return f.length === 1 ? f(undefined) : f.bind(null, undefined);
-}
-
 function _<F extends Functional>(
     f: F,
     arg: FirstParameter<F>
@@ -96,17 +104,24 @@ function _<F extends Functional>(
     return f.length === 1 ? f(arg) : f.bind(null, arg);
 }
 
-function partial<F extends Functional>(
-    f: F,
-    arg: FirstParameter<F>
-): PartialApplied<F> {
+function partialCurried<F extends Functional>(
+    f: F
+): Unary<FirstParameter<F>, PartialApplied<F>> {
     checkWithError(
         f,
         (f) => f.length <= 0,
-        () => new PartialError(f, [arg])
+        () => new ArityError(f, undefined)
     );
-    return _(f, arg);
+    return _(_<F>, f);
 }
+
+const partial: <F extends Functional>(
+    f: F,
+    arg: FirstParameter<F>
+) => PartialApplied<F> = (f, arg) => partialCurried(f)(arg);
+
+const blindBind = <F extends Functional>(f: F): PartialApplied<F> =>
+    partial(f, undefined as FirstParameter<F>);
 
 type Prefix<T extends unknown[]> = T extends [...infer Init, infer Last]
     ? Prefix<Init> | [...Init, Last]
@@ -131,27 +146,27 @@ function partialN<F extends Functional, Args extends PartialParameters<F>>(
     checkWithError(
         f,
         (f) => f.length <= 0 || args.length > f.length,
-        () => new PartialError(f, args)
+        () => new ArityError(f, args)
     );
     return __(f, args);
 }
 
-class CurryingError<F extends Functional> extends Error {
-    constructor(private target: F) {
-        super(`${target} with arity of ${target.length} can not be curried. `);
-        this.name = this.constructor.name;
-    }
-}
+type Curried<F extends Functional> = F extends Unary
+    ? F
+    : (a: FirstParameter<F>) => Curried<PartialApplied<F>>;
 
-function curry<F extends Functional>(
-    f: F
-): Unary<FirstParameter<F>, PartialApplied<F>> {
+const _curry = <F extends Functional>(f: F): Curried<F> =>
+    (f.length === 1
+        ? f
+        : (a: FirstParameter<F>) => _curry(_(f, a))) as Curried<F>;
+
+function curry<F extends Functional>(f: F): Curried<F> {
     checkWithError(
         f,
-        (f) => f.length < 2,
-        () => new CurryingError(f)
+        (f) => f.length <= 1,
+        () => new ArityError(f, undefined)
     );
-    return _(_<F>, f);
+    return _curry(f);
 }
 
 function id<T>(x: T): T {
@@ -168,24 +183,30 @@ function right<A, B>(_: A, b: B): B {
 }
 
 function withConstant<F extends Functional>(f: F, r: ReturnType<F>): F {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    return modified(() => r, f) as F;
+    return proxied(() => r, f) as F;
 }
 
 function chain<G extends Functional, R>(
     f: Unary<ReturnType<G>, R>,
     g: G
 ): (...args: Parameters<G>) => R {
-    return modified((target, argArray) => f(target(...argArray)), g);
+    return proxied((target, argArray) => f(target(...argArray)), g);
 }
 
 function swapped<F extends Binary>(
     f: F
-): (arg0: Parameters<F>[1], arg1: FirstParameter<F>) => ReturnType<F> {
-    return modified((g, [a, b]) => g(b, a), f);
+): (arg0: SecondParameter<F>, arg1: FirstParameter<F>) => ReturnType<F> {
+    return proxied((g, [a, b]) => g(b, a), f);
 }
 
 const cons = <A>(a: A, as: A[]): A[] => [a, ...as];
+
+/**
+ * Extract everything except the last element of the stream.
+ * @param xs
+ * @returns
+ */
+const init = <A>(xs: A[]): A[] => xs.slice(0, -1);
 
 const unspreaded =
     <F extends Functional>(f: F): Unary<Parameters<F>, ReturnType<F>> =>
@@ -206,6 +227,7 @@ export {
     Binary,
     FirstParameter,
     Functional,
+    LastParameter,
     NPartialApplied,
     Nullary,
     PartialApplied,
@@ -218,16 +240,19 @@ export {
     Unary,
     _,
     __,
+    _curry,
     blindBind,
     chain,
     checkWithError,
     cons,
     curry,
     id,
+    init,
     left,
-    modified,
     partial,
+    partialCurried,
     partialN,
+    proxied,
     right,
     swapped,
     unspreaded,

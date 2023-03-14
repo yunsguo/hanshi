@@ -5,6 +5,7 @@ import {
     cons,
     curry,
     id,
+    init,
     left,
     partial,
     partialN,
@@ -94,7 +95,7 @@ describe('lib/prelude', () => {
     describe('curry', () => {
         it('should change its signature to a morphism', () => {
             const curried = curry(add);
-            expect(curried(1)(2, 3, 4)).toBe(10);
+            expect(curried(1)(2)(3)(4)).toBe(10);
         });
         it('should throw with a spread function', () => {
             const f: Binary<number, number, number> = (...args: number[]) =>
@@ -142,7 +143,7 @@ describe('lib/prelude', () => {
     describe('swapped', () => {
         const liner = (a: number, b: number) => a * 7 + b;
         it('should return a function that swap the two parameters', () => {
-            const [a, b] = [...Array(2).keys()].map((_) => Math.random());
+            const [a, b] = [...Array(2).keys()].map(() => Math.random());
             expect(swapped(liner)(a, b)).toStrictEqual(liner(b, a));
         });
     });
@@ -154,8 +155,15 @@ describe('lib/prelude', () => {
     });
     describe('unspread', () => {
         it('should return function as if its arguments were consolidated into a single array', () => {
-            expect(unspreaded(add)([1,2,3,4])).toBe(10);
-            expect(unspreaded(add)([7,8,9,0])).toBe(24);
+            expect(unspreaded(add)([1, 2, 3, 4])).toBe(10);
+            expect(unspreaded(add)([7, 8, 9, 0])).toBe(24);
+        });
+    });
+    describe('init', () => {
+        it('should return everything except the last element of the stream', () => {
+            expect(init([1, 2, 3, 4])).toStrictEqual([1, 2, 3]);
+            expect(init([7, 8, 9, 0])).toStrictEqual([7, 8, 9]);
+            expect(init([])).toStrictEqual([]);
         });
     });
 });
