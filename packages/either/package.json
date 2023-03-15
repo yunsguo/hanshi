@@ -5,8 +5,8 @@
     "author": "Guo, Yunsheng <yunsguo@gmail.com>",
     "homepage": "https://github.com/yunsguo/hanshi#readme",
     "license": "MIT",
-    "main": "dist/either.js",
-    "types": "dist/either.d.ts",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
     "directories": {
         "lib": "lib",
         "test": "__tests__"
@@ -47,6 +47,7 @@
     },
     "prettier": "@hanshi/prettier-config",
     "dependencies": {
+        "@hanshi/array-typeclass": "^0.0.1",
         "@hanshi/prelude": "^0.1.4"
     },
     "publishConfig": {

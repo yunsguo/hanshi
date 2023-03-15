@@ -1,6 +1,6 @@
 {
-    "name": "@hanshi/maybe",
-    "version": "0.1.3",
+    "name": "@hanshi/array-typeclass",
+    "version": "0.0.1",
     "description": "> TODO: description",
     "author": "Guo, Yunsheng <yunsguo@gmail.com>",
     "homepage": "https://github.com/yunsguo/hanshi#readme",
@@ -14,15 +14,22 @@
     "files": [
         "dist"
     ],
+    "publishConfig": {
+        "access": "public"
+    },
+    "prettier": "@hanshi/prettier-config",
+    "eslintConfig": {
+        "extends": "@hanshi"
+    },
     "repository": {
         "type": "git",
         "url": "git+https://github.com/yunsguo/hanshi.git"
     },
     "scripts": {
-        "test": "jest",
         "build": "rm -rf dist/ && tsc",
+        "format": "prettier --write .",
         "lint": "eslint . --fix",
-        "format": "prettier --write ."
+        "test": "jest"
     },
     "bugs": {
         "url": "https://github.com/yunsguo/hanshi/issues"
@@ -42,15 +49,7 @@
         "ts-jest": "^29.0.3",
         "typescript": "^4.8.4"
     },
-    "eslintConfig": {
-        "extends": "@hanshi"
-    },
-    "prettier": "@hanshi/prettier-config",
     "dependencies": {
-        "@hanshi/prelude": "^0.1.4",
-        "@hanshi/array-typeclass": "^0.0.1"
-    },
-    "publishConfig": {
-        "access": "public"
+        "@hanshi/prelude": "^0.1.5"
     }
 }

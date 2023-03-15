@@ -60,16 +60,16 @@ const leftTie = <A, B>(as: A[], bs: B[]) =>
 
 const leftTie2 = defineLeftTie(liftAN2);
 
-const seqneuceA = (() => {
-    const seqneuceA: Unary = (fa) => {
+const sequenceA = (() => {
+    const sequenceA: Unary = (fa) => {
         if (fa.length === 0) return pure(fa);
         const [x, ...xs] = fa;
-        return tie(fmap(cons, x), seqneuceA(xs));
+        return tie(fmap(cons, x), sequenceA(xs));
     };
-    return seqneuceA;
+    return sequenceA;
 })();
 
-const traverse = defineTraverse(fmap, seqneuceA);
+const traverse = defineTraverse(fmap, sequenceA);
 
 const NArrayRandom = (n: number): number[] =>
     [...Array(n).keys()].map(() => Math.random());
@@ -130,7 +130,7 @@ describe('lib/type-class', () => {
     describe('sequenceA', () => {
         it('should provide a correct implentation', () => {
             expect(
-                seqneuceA([
+                sequenceA([
                     [1, 2, 3],
                     [4, 5, 6]
                 ])

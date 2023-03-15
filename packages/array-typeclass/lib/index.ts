@@ -1,12 +1,17 @@
 import {
     FirstParameter,
     Functional,
+    LastParameter,
     PartialApplied,
     Terminal,
-    _,
-    left,
-    modified,
-    partial
+    Unary,
+    blindBind,
+    cons,
+    defineTraverse,
+    init,
+    partial,
+    partialCurried,
+    proxied
 } from '@hanshi/prelude';
 
 /**
@@ -28,9 +33,9 @@ import {
  */
 function fmap<F extends Functional>(
     f: F,
-    fa: Promise<Awaited<FirstParameter<F>>>
-): Promise<PartialApplied<F>> {
-    return fa.then((a) => partial<F>(f, a));
+    aa: FirstParameter<F>[]
+): PartialApplied<F>[] {
+    return aa.map((a) => partial(f, a));
 }
 
 /**
@@ -39,10 +44,7 @@ function fmap<F extends Functional>(
  * @param pb
  * @returns
  */
-function v$<A, B>(a: A, pb: Promise<B>): Promise<A> {
-    const rep = _(left<A, B>, a);
-    return pb.then(rep, rep);
-}
+const v$ = <A, B>(a: A, pb: B[]): A[] => pb.map(() => a);
 
 /**
  * pure :: a -> f a
@@ -70,9 +72,7 @@ function v$<A, B>(a: A, pb: Promise<B>): Promise<A> {
  * @param a
  * @returns
  */
-function pure<A>(a: A) {
-    return Promise.resolve(a);
-}
+const pure = <A>(a: A): [A] => [a];
 
 /**
  * `<*>` :: f (a -> b) -> f a -> f b
@@ -102,35 +102,40 @@ function pure<A>(a: A) {
  * @returns
  */
 function tie<F extends Functional>(
-    pf: Promise<F>,
-    pa: Promise<Awaited<FirstParameter<F>>>
-): Promise<PartialApplied<F>> {
-    return Promise.all([pf, pa]).then(([f, a]) => partial(f, a));
+    fs: F[],
+    xs: FirstParameter<F>[]
+): PartialApplied<F>[] {
+    const fs_ = fs.map(partialCurried);
+    return xs.flatMap((x) => fs_.map((f_) => f_(x)));
 }
 
-type PromiseMap<T extends unknown[]> = T extends [infer Head, ...infer Tail]
-    ? [Promise<Head>, ...PromiseMap<Tail>]
+type ArrayMap<T extends unknown[]> = T extends [infer Head, ...infer Tail]
+    ? [Head[], ...ArrayMap<Tail>]
     : [];
 
 type Lifted<F extends Functional> = (
-    ...args: PromiseMap<Parameters<F>>
-) => Promise<ReturnType<F>>;
+    ...args: ArrayMap<Parameters<F>>
+) => ReturnType<F>[];
 
 const liftAN = <F extends Functional>(f: F): Lifted<F> =>
-    modified(
-        (target, args) => Promise.all(args).then((as) => target(...as)),
+    proxied(
+        (target: F, args: ArrayMap<Parameters<F>>) =>
+            args
+                .reduce(
+                    (prev: unknown[][], as: unknown[]) =>
+                        prev.length === 0
+                            ? as.map(pure)
+                            : as.flatMap((a) => prev.map((p) => p.concat(a))),
+                    []
+                )
+                .map((args) => target(...args)),
         f
     );
 
-function rightTie<A, B>(fa: Promise<A>, fb: Promise<B>): Promise<B> {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    return fa.then((a) => fb);
-}
+const rightTie = <A, B>(xs: A[], ys: B[]): B[] =>
+    ys.flatMap((y) => xs.map(() => y));
 
-function leftTie<A, B>(fa: Promise<A>, fb: Promise<B>): Promise<A> {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    return fa.then((a) => fb.then((b) => a));
-}
+const leftTie = <A, B>(xs: A[], ys: B[]): A[] => ys.flatMap(() => xs);
 
 /**
  * `>>=` :: forall a b. m a -> (a -> m b) -> m b
@@ -168,13 +173,54 @@ function leftTie<A, B>(fa: Promise<A>, fb: Promise<B>): Promise<A> {
  * @param pa
  * @returns
  */
-function warp<R, F extends Terminal<Promise<R>>>(
-    pa: Promise<Awaited<Parameters<F>>>,
+function warp<R, F extends Terminal<R[]>>(
+    xs: LastParameter<F>[],
     f: F
-): ReturnType<F> {
-    return pa.then((args) => f(...args)) as ReturnType<F>;
+): PartialApplied<F> {
+    return blindBind(
+        proxied(
+            (target: F, args: unknown[]) =>
+                xs.flatMap((x) => target(...init(args), x)),
+            f
+        ) as F
+    );
 }
+
+const w_ = warp;
 
 const insert = rightTie;
 
-export { fmap, insert, leftTie, liftAN, pure, rightTie, tie, v$, warp };
+type FTA<TFA extends unknown[]> = TFA extends [infer AHead, ...infer Tail]
+    ? AHead extends Array<infer Head>
+        ? [Head, ...FTA<Tail>]
+        : never
+    : [];
+
+const sequenceA: <TFA extends unknown[]>(tfa: TFA) => FTA<TFA>[] = (() => {
+    const sequenceA: Unary = (fa) => {
+        if (fa.length === 0) return pure(fa);
+        const [x, ...xs] = fa;
+        return tie(fmap(cons, x), sequenceA(xs));
+    };
+    return sequenceA;
+})();
+
+const traverse: <A, B>(f: Unary<A, B[]>, as: A[]) => B[][] = defineTraverse(
+    fmap,
+    sequenceA
+);
+
+export {
+    fmap,
+    insert,
+    leftTie,
+    liftAN,
+    pure,
+    rightTie,
+    sequenceA,
+    tie,
+    traverse,
+    v$,
+    w_,
+    warp
+};

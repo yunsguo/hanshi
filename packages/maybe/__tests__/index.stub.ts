@@ -1,17 +1,18 @@
-import { defineDefaultedLiftAN, defineDefaultedv$, id } from '@hanshi/prelude';
+import { defineLiftAN, defineReplace, id } from '@hanshi/prelude';
 import {
     Just,
     Nothing,
-    warp,
     fmap,
+    insert,
+    liftAN,
     maybe,
     nothing,
-    v$,
-    tie,
     pure,
-    liftAN,
-    insert
-} from '../lib/maybe';
+    tie,
+    v$,
+    warp,
+    sequenceA
+} from '../lib';
 
 describe('lib/maybe', () => {
     describe('maybe', () => {
@@ -58,7 +59,7 @@ describe('lib/maybe', () => {
         });
         describe('<$', () => {
             it('should return with correct value', () => {
-                const v$2 = defineDefaultedv$(fmap);
+                const v$2 = defineReplace(fmap);
                 expect(v$(5, Just.of(1))).toStrictEqual(v$2(5, Just.of(1)));
                 expect(v$(4, nothing)).toStrictEqual(v$2(4, nothing));
             });
@@ -77,7 +78,7 @@ describe('lib/maybe', () => {
         });
         describe('liftAN', () => {
             it('should return with correct value', () => {
-                const liftAN2 = defineDefaultedLiftAN(pure, tie);
+                const liftAN2 = defineLiftAN(pure, tie);
                 expect(liftAN(add)(pure(1), pure(2))).toStrictEqual(
                     liftAN2(add)(pure(1), pure(2))
                 );
@@ -88,12 +89,13 @@ describe('lib/maybe', () => {
         });
         const addMaybe = (a: number, b: number) =>
             a + b === 0 ? nothing : Just.of(a + b);
+
         describe('>>=', () => {
             it('should return with correct value', () => {
-                expect(warp(nothing, addMaybe)).toBe(nothing);
-                expect(warp(Just.of([5, 10]), addMaybe)).toStrictEqual(
-                    Just.of(15)
-                );
+                expect(warp(nothing, addMaybe)(5)).toBe(nothing);
+                expect(
+                    warp(Just.of(5), warp(Just.of(10), addMaybe))
+                ).toStrictEqual(Just.of(15));
             });
         });
         describe('>>', () => {
@@ -102,6 +104,14 @@ describe('lib/maybe', () => {
                 expect(insert(Just.of(5), nothing)).toBe(nothing);
                 expect(insert(Just.of(5), Just.of(11))).toStrictEqual(
                     Just.of(11)
+                );
+            });
+        });
+        describe('sequenceA', () => {
+            it('should return with correct value', () => {
+                expect(sequenceA([nothing, Just.of(5)])).toStrictEqual(nothing);
+                expect(sequenceA([5, 6, 7].map(pure))).toStrictEqual(
+                    Just.of([5, 6, 7])
                 );
             });
         });

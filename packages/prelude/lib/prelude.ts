@@ -7,40 +7,42 @@ import { EOL } from 'os';
  */
 type Functional = (...args: any[]) => any;
 
-type FirstParameter<F> = F extends (...args: [infer Head, ...any[]]) => any
+type FirstParameter<F> = F extends (...args: [infer Head, ...infer Tail]) => any
     ? Head
     : never;
 
 type SecondParameter<F> = F extends (
-    ...args: [any, infer Second, ...any[]]
+    ...args: [infer First, infer Second, ...infer Tail]
 ) => any
     ? Second
     : never;
 
-type LastParameter<F> = F extends (...args: [...any[], infer Last]) => any
+type LastParameter<F> = F extends (...args: [...infer Init, infer Last]) => any
+    ? Last
+    : F extends (arg: infer Last) => any
     ? Last
     : never;
 
 type NPartialApplied<F, Args> = F extends (
     ...args: [infer Arg, ...infer Rest]
 ) => infer R
-    ? Args extends [infer Head, ...infer Tails]
+    ? Args extends [infer Head, ...infer Tail]
         ? Head extends Arg
-            ? Tails extends []
+            ? Tail extends []
                 ? Rest extends []
                     ? R
                     : (...args: Rest) => R
-                : NPartialApplied<(...args: Rest) => R, Tails>
+                : NPartialApplied<(...args: Rest) => R, Tail>
             : never
         : never
     : never;
 
 type PartialApplied<F> = NPartialApplied<F, [FirstParameter<F>]>;
 
-function proxied<F extends Functional>(
-    invoke: (f: F, args: any[]) => any,
-    f: F
-): Functional {
+function proxied<Invoke extends Binary>(
+    invoke: Invoke,
+    f: FirstParameter<Invoke>
+): (...args: SecondParameter<Invoke>) => ReturnType<Invoke> {
     return new Proxy(f, {
         apply: (target, thisArg, argArray) => invoke(target, argArray)
     });
@@ -186,17 +188,18 @@ function withConstant<F extends Functional>(f: F, r: ReturnType<F>): F {
     return proxied(() => r, f) as F;
 }
 
-function chain<G extends Functional, R>(
-    f: Unary<ReturnType<G>, R>,
-    g: G
-): (...args: Parameters<G>) => R {
-    return proxied((target, argArray) => f(target(...argArray)), g);
+function chain<G extends Functional, R>(f: Unary<ReturnType<G>, R>, g: G) {
+    return proxied(
+        (target: G, argArray: Parameters<G>) => f(target(...argArray)),
+        g
+    );
 }
 
-function swapped<F extends Binary>(
-    f: F
-): (arg0: SecondParameter<F>, arg1: FirstParameter<F>) => ReturnType<F> {
-    return proxied((g, [a, b]) => g(b, a), f);
+function swapped<F extends Binary>(f: F) {
+    return proxied(
+        (g: F, [a, b]: [SecondParameter<F>, FirstParameter<F>]) => g(b, a),
+        f
+    );
 }
 
 const cons = <A>(a: A, as: A[]): A[] => [a, ...as];
@@ -223,10 +226,58 @@ type Ternary<A = any, B = any, C = any, D = any> = (a: A, b: B, c: C) => D;
 
 type Terminal<R> = (...args: any[]) => R;
 
+// function _R<F extends Functional>(
+//     f: F,
+//     arg: LastParameter<F>
+// ): PartialApplied<F> {
+//     return f.length === 1 ? f(arg) : proxied((target,args)=>,f);
+// }
+
+const take = <A>(n: number, as: A[]): A[] => (n < 0 ? [] : as.slice(0, n));
+
+type ReversedNPartialApplied<F, Args> = F extends (
+    ...args: [...infer Rest, infer Arg]
+) => infer R
+    ? Args extends [...infer Init, infer Last]
+        ? Last extends Arg
+            ? Init extends []
+                ? Rest extends []
+                    ? R
+                    : (...args: Rest) => R
+                : NPartialApplied<(...args: Rest) => R, Init>
+            : never
+        : never
+    : never;
+
+type ReversedPartialApplied<F> = NPartialApplied<F, [LastParameter<F>]>;
+
+type Head<As extends unknown[]> = As extends [infer Head, ...infer Tail]
+    ? Head
+    : never;
+
+type Tail<As extends unknown[]> = As extends [infer Head, ...infer Tail]
+    ? Tail
+    : never;
+
+type Init<As extends unknown[]> = As extends [...infer Init, infer Last]
+    ? Init
+    : never;
+
+type Last<As extends unknown[]> = As extends [...infer Init, infer Last]
+    ? Last
+    : never;
+
+// const blindBindReverse = <F extends Functional>(f: F): PartialApplied<F> =>
+//     partial(f, undefined as FirstParameter<F>);
+
 export {
+    ArityError,
     Binary,
     FirstParameter,
     Functional,
+    Head,
+    Init,
+    Last,
     LastParameter,
     NPartialApplied,
     Nullary,
@@ -235,6 +286,9 @@ export {
     Predicate,
     Prefix,
     Reducer,
+    ReversedNPartialApplied,
+    ReversedPartialApplied,
+    Tail,
     Terminal,
     Ternary,
     Unary,
@@ -255,6 +309,7 @@ export {
     proxied,
     right,
     swapped,
+    take,
     unspreaded,
     withConstant
 };

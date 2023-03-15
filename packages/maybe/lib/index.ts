@@ -1,13 +1,20 @@
+import { fmap as arrayFmap } from '@hanshi/array-typeclass';
 import {
     FirstParameter,
     Functional,
+    Init,
+    LastParameter,
     PartialApplied,
+    ReversedPartialApplied,
     Terminal,
     Unary,
     decay as a,
-    modified,
+    blindBind,
+    defineTraverse,
     partial,
-    swapped
+    proxied,
+    swapped,
+    take
 } from '@hanshi/prelude';
 
 class Nothing {
@@ -16,6 +23,7 @@ class Nothing {
         return a;
     }
 }
+
 const nothing = new Nothing();
 
 class Just<T = unknown> {
@@ -51,7 +59,6 @@ function fmap<F extends Functional>(
     return fa instanceof Nothing ? nothing : Just.of(partial(f, fa[a]));
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function v$<A, B>(a: A, fb: Maybe<B>): Maybe<A> {
     return fb instanceof Nothing ? nothing : Just.of(a);
 }
@@ -75,15 +82,14 @@ type Lifted<F extends Functional> = (
     ...args: MaybeMap<Parameters<F>>
 ) => Maybe<ReturnType<F>>;
 
-function liftAN<F extends Functional>(f: F): Lifted<F> {
-    return modified(
-        (target, args) =>
+const liftAN = <F extends Functional>(f: F): Lifted<F> =>
+    proxied(
+        (target: F, args: MaybeMap<Parameters<F>>) =>
             args.some((m) => (m as unknown) instanceof Nothing)
                 ? nothing
                 : Just.of(target(...args.map((m) => m[a]))),
         f
     );
-}
 
 const rightTie: <A, B>(ma: Maybe<A>, mb: Maybe<B>) => Maybe<B> = (ma, mb) =>
     ma instanceof Nothing ? nothing : mb;
@@ -91,17 +97,42 @@ const rightTie: <A, B>(ma: Maybe<A>, mb: Maybe<B>) => Maybe<B> = (ma, mb) =>
 const leftTie: <A, B>(ma: Maybe<A>, mb: Maybe<B>) => Maybe<A> =
     swapped(rightTie);
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function warp<F extends Terminal<Maybe>>(
-    margs: Maybe<Parameters<F>>,
+    marg: Maybe<LastParameter<F>>,
     f: F
-): ReturnType<F> {
-    return margs instanceof Nothing
-        ? (nothing as ReturnType<F>)
-        : (margs.dmap((args) => f(...args)) as ReturnType<F>);
+): ReversedPartialApplied<F> {
+    return blindBind(
+        proxied(
+            (
+                target: F,
+                [, ...init]: [LastParameter<F>, ...Init<Parameters<F>>]
+            ) =>
+                (marg instanceof Nothing
+                    ? nothing
+                    : target(
+                          ...take(target.length - 1, init),
+                          marg[a]
+                      )) as ReturnType<F>,
+            f
+        )
+    ) as ReversedPartialApplied<F>;
 }
 
 const insert = rightTie;
+
+type FTA<TFA extends unknown[]> = TFA extends [infer MaybeHead, ...infer Tail]
+    ? MaybeHead extends Maybe<infer Head>
+        ? [Head, ...FTA<Tail>]
+        : never
+    : [];
+
+const sequenceA = <TFA extends Maybe[]>(tfa: TFA): Maybe<FTA<TFA>> =>
+    tfa.some((m) => m instanceof Nothing)
+        ? nothing
+        : Just.of(tfa.map((m) => (m as Just)[a]));
+
+const traverse: <A, B>(f: Unary<A, Maybe<B>>, as: A[]) => Maybe<B[]> =
+    defineTraverse(arrayFmap, sequenceA);
 
 export {
     Just,
@@ -115,7 +146,9 @@ export {
     nothing,
     pure,
     rightTie,
+    sequenceA,
     tie,
+    traverse,
     v$,
     warp
 };

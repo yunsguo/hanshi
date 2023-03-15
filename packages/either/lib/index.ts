@@ -1,14 +1,21 @@
+import { fmap as arrayFmap } from '@hanshi/array-typeclass';
 import {
     FirstParameter,
     Functional,
+    Init,
+    LastParameter,
     PartialApplied,
+    ReversedPartialApplied,
     Terminal,
     Unary,
     decay as a,
+    blindBind,
+    defineTraverse,
     id,
-    modified,
     partial,
-    swapped
+    proxied,
+    swapped,
+    take
 } from '@hanshi/prelude';
 
 type Either<A, B = unknown> = Left<A> | Right<B>;
@@ -133,31 +140,59 @@ type Lifted<A, F extends Functional> = (
 ) => Either<A, ReturnType<F>>;
 
 const liftAN = <A, F extends Functional>(f: F): Lifted<A, F> =>
-    modified((target, args) => {
+    proxied((target: F, args: EitherMap<A, Parameters<F>>) => {
         const foundLeft = args.find(isLeft);
         if (foundLeft !== undefined) return foundLeft;
         return Right.of(target(...args.map((e) => e[a])));
     }, f);
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const _rightTie = (ma: any, mb: any) => (ma instanceof Left ? ma : mb);
-
-const rightTie: <A, B, L>(ma: Either<L, A>, mb: Either<L, B>) => Either<L, B> =
-    _rightTie;
+const rightTie: <A, B, L>(
+    ma: Either<L, A>,
+    mb: Either<L, B>
+) => Either<L, B> = (ma, mb) => (ma instanceof Left ? ma : mb);
 
 const leftTie: <A, B, L>(ma: Either<L, A>, mb: Either<L, B>) => Either<L, A> =
-    swapped(_rightTie);
+    swapped(rightTie);
 
-function warp<L, F extends Terminal<Either<L>>>(
-    margs: Either<L, Parameters<F>>,
+const warp = <L, F extends Terminal<Either<L>>>(
+    marg: Either<L, LastParameter<F>>,
     f: F
-): ReturnType<F> {
-    return margs instanceof Left
-        ? (margs as ReturnType<F>)
-        : (margs.dmap((args) => f(...args)) as ReturnType<F>);
-}
+): ReversedPartialApplied<F> =>
+    blindBind(
+        proxied(
+            (
+                target: F,
+                [, ...init]: [LastParameter<F>, ...Init<Parameters<F>>]
+            ) =>
+                (marg instanceof Left
+                    ? marg
+                    : target(
+                          ...take(target.length - 1, init),
+                          marg[a]
+                      )) as ReturnType<F>,
+            f
+        )
+    ) as ReversedPartialApplied<F>;
 
 const insert = rightTie;
+
+type FTA<L, TFA extends unknown[]> = TFA extends [infer Head, ...infer Tail]
+    ? Head extends Either<L, infer R>
+        ? [Head, FTA<L, Tail>]
+        : never
+    : [];
+
+const sequenceA = <L, TFA extends Either<L>[]>(
+    tfa: TFA
+): Either<L, FTA<L, TFA>> => {
+    for (const e of tfa) if (e instanceof Left) return e;
+    return pure(tfa.map((e) => e[a])) as Either<L, FTA<L, TFA>>;
+};
+
+const traverse: <L, A, B>(
+    f: Unary<A, Either<L, B>>,
+    as: A[]
+) => Either<L, B[]> = defineTraverse(arrayFmap, sequenceA);
 
 export {
     Either,
@@ -172,12 +207,14 @@ export {
     isRight,
     leftTie,
     lefts,
+    liftAN,
     partitionEithers,
     pure,
     rightTie,
     rights,
+    sequenceA,
     tie,
+    traverse,
     v$,
-    warp,
-    liftAN
+    warp
 };

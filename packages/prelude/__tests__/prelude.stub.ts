@@ -11,6 +11,7 @@ import {
     partialN,
     right,
     swapped,
+    take,
     unspreaded,
     withConstant
 } from '../lib/prelude';
@@ -164,6 +165,13 @@ describe('lib/prelude', () => {
             expect(init([1, 2, 3, 4])).toStrictEqual([1, 2, 3]);
             expect(init([7, 8, 9, 0])).toStrictEqual([7, 8, 9]);
             expect(init([])).toStrictEqual([]);
+        });
+    });
+    describe('take', () => {
+        it('should take items from provided list by given number', () => {
+            expect(take(3, [1, 2, 3, 4])).toStrictEqual([1, 2, 3]);
+            expect(take(2, [7, 8, 9, 0])).toStrictEqual([7, 8]);
+            expect(take(-1, [])).toStrictEqual([]);
         });
     });
 });

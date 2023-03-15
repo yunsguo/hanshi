@@ -26,8 +26,8 @@ const defineRightTie = (replace: Binary, tie: Binary) => (u: any, v: any) =>
 
 const defineLeftTie = (liftAN: Unary) => (u: any, v: any) => liftAN(left)(u, v);
 
-const defineTraverse = (fmap: Binary, seqneuceA: Unary) => (f: any, ta: any) =>
-    seqneuceA(fmap(f, ta));
+const defineTraverse = (fmap: Binary, sequenceA: Unary) => (f: any, ta: any) =>
+    sequenceA(fmap(f, ta));
 
 const defineSequenceA = (traverse: Binary) => partialCurried(traverse)(id);
 

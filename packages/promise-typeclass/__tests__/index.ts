@@ -1,14 +1,5 @@
-import { defineDefaultedLiftAN, defineDefaultedv$, id } from '@hanshi/prelude';
-import {
-    warp,
-    fmap,
-    leftTie,
-    pure,
-    v$,
-    rightTie,
-    tie,
-    liftAN
-} from '../lib/promise-monad';
+import { defineLiftAN, defineReplace, id } from '@hanshi/prelude';
+import { fmap, leftTie, liftAN, pure, rightTie, tie, v$, warp } from '../lib';
 
 function add(a: number, b: number, c: number, d: number): Promise<number> {
     return pure(a + b + c + d);
@@ -32,7 +23,7 @@ describe('lib/promise-monad', () => {
     });
     describe('v$', () => {
         it('should return with correct value', () => {
-            const v$2 = defineDefaultedv$(fmap);
+            const v$2 = defineReplace(fmap);
             expect(v$(5, Promise.resolve(1))).toStrictEqual(v$2(5, pure(1)));
 
             expect(v$(4, Promise.reject(1)).catch(id)).toStrictEqual(
@@ -57,7 +48,7 @@ describe('lib/promise-monad', () => {
     });
     describe('liftAN', () => {
         it('should sequence operations and combine their results', async () => {
-            const liftAN2 = defineDefaultedLiftAN(pure, tie);
+            const liftAN2 = defineLiftAN(pure, tie);
             const args = [1, 2, 3, 4].map(pure) as [
                 Promise<number>,
                 Promise<number>,
@@ -86,15 +77,16 @@ describe('lib/promise-monad', () => {
         it('Sequentially wrap two actions', async () => {
             expect(
                 await warp(
-                    Promise.resolve([1, 1, 2, 3] as [
-                        number,
-                        number,
-                        number,
-                        number
-                    ]),
-                    add
+                    Promise.resolve(4),
+                    warp(
+                        Promise.resolve(3),
+                        warp(Promise.resolve(2), warp(Promise.resolve(1), add))
+                    )
                 )
-            ).toBe(7);
+            ).toBe(10);
+            await expect(
+                warp(Promise.reject('message'), add)(3, 4, 5)
+            ).rejects.toMatch('message');
         });
     });
 });

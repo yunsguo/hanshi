@@ -1,13 +1,8 @@
-import {
-    defineDefaultedLiftAN,
-    defineDefaultedRightTie,
-    id
-} from '@hanshi/prelude';
+import { defineLiftAN, defineRightTie, id } from '@hanshi/prelude';
 import {
     Either,
     Left,
     Right,
-    warp,
     either,
     fmap,
     fromLeft,
@@ -15,14 +10,17 @@ import {
     isLeft,
     isRight,
     lefts,
-    partitionEithers,
-    v$,
-    rights,
-    tie,
-    pure,
     liftAN,
-    rightTie
-} from '../lib/either';
+    partitionEithers,
+    pure,
+    rightTie,
+    rights,
+    sequenceA,
+    tie,
+    traverse,
+    v$,
+    warp
+} from '../lib';
 
 describe('lib/either', () => {
     describe('either', () => {
@@ -156,7 +154,7 @@ describe('lib/either', () => {
         });
         describe('liftAN', () => {
             it('should return with correct value', () => {
-                const liftAN2 = defineDefaultedLiftAN(pure, tie);
+                const liftAN2 = defineLiftAN(pure, tie);
 
                 expect(liftAN(add)(pure(6), pure(7))).toStrictEqual(
                     liftAN2(add)(pure(6), pure(7))
@@ -171,7 +169,7 @@ describe('lib/either', () => {
         });
         describe('rightTie', () => {
             it('should return with correct value', () => {
-                const rightTie2 = defineDefaultedRightTie(v$, tie);
+                const rightTie2 = defineRightTie(v$, tie);
 
                 expect(rightTie(pure(6), pure(7))).toStrictEqual(
                     rightTie2(pure(6), pure(7))
@@ -191,10 +189,44 @@ describe('lib/either', () => {
             a + b === 0 ? Left.of(0) : Right.of(a + b);
         describe('warp', () => {
             it('should return with correct value', () => {
-                expect(warp(Left.of(6), addEither)).toStrictEqual(Left.of(6));
+                expect(warp(Left.of(6), addEither)(7)).toStrictEqual(
+                    Left.of(6)
+                );
+                expect(warp(Right.of(5), addEither)(6)).toStrictEqual(
+                    Right.of(11)
+                );
+            });
+        });
+        describe('sequenceA', () => {
+            it('should return with correct value', () => {
                 expect(
-                    warp(Right.of([5, 6] as [number, number]), addEither)
-                ).toStrictEqual(Right.of(11));
+                    sequenceA([Left.of(5), ...[6, 7, 8].map(pure)])
+                ).toStrictEqual(Left.of(5));
+                expect(
+                    sequenceA([
+                        ...[5, 6, 7].map(Left.of),
+                        ...[6, 7, 8].map(pure)
+                    ])
+                ).toStrictEqual(Left.of(5));
+                expect(sequenceA([5, 6, 7].map(pure))).toStrictEqual(
+                    Right.of([5, 6, 7])
+                );
+            });
+        });
+        describe('traverse', () => {
+            it('should return with correct value', () => {
+                expect(
+                    traverse(id, [Left.of(5), ...[6, 7, 8].map(pure)])
+                ).toStrictEqual(Left.of(5));
+                expect(
+                    traverse(id, [
+                        ...[5, 6, 7].map(Left.of),
+                        ...[6, 7, 8].map(pure)
+                    ])
+                ).toStrictEqual(Left.of(5));
+                expect(traverse(id, [5, 6, 7].map(pure))).toStrictEqual(
+                    Right.of([5, 6, 7])
+                );
             });
         });
     });
