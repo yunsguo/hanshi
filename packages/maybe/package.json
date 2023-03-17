@@ -48,7 +48,8 @@
     "prettier": "@hanshi/prettier-config",
     "dependencies": {
         "@hanshi/prelude": "^0.2.0",
-        "@hanshi/array-typeclass": "^0.0.1"
+        "@hanshi/array-typeclass": "^0.0.1",
+        "@hanshi/typeclass": "^0.0.1"
     },
     "publishConfig": {
         "access": "public"

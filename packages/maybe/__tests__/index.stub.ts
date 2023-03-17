@@ -1,4 +1,4 @@
-import { defineLiftAN, defineReplace, id } from '@hanshi/prelude';
+import { id } from '@hanshi/prelude';
 import {
     Just,
     Nothing,
@@ -13,6 +13,7 @@ import {
     warp,
     sequenceA
 } from '../lib';
+import { defineLiftAN, defineReplace } from '@hanshi/typeclass';
 
 describe('lib/maybe', () => {
     describe('maybe', () => {

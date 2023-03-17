@@ -10,7 +10,7 @@ import {
     partial,
     partialCurried,
     proxied
-} from './prelude';
+} from '@hanshi/prelude';
 
 const defineReplace = (fmap: Binary) => (a: any, fb: any) =>
     fmap(_(left, a), fb);

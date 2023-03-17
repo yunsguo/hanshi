@@ -1,14 +1,13 @@
+import { Functional, id } from '@hanshi/prelude';
 import {
-    Functional,
     defineLeftTie,
     defineLiftAN,
     defineReplace,
     defineRightTie,
     defineSequenceA,
     defineTie,
-    defineTraverse,
-    id
-} from '@hanshi/prelude';
+    defineTraverse
+} from '@hanshi/typeclass';
 import {
     fmap,
     leftTie,

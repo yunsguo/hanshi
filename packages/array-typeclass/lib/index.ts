@@ -7,12 +7,12 @@ import {
     Unary,
     blindBind,
     cons,
-    defineTraverse,
     init,
     partial,
     partialCurried,
     proxied
 } from '@hanshi/prelude';
+import { defineTraverse } from '@hanshi/typeclass';
 
 /**
  * fmap :: (a -> b) -> f a -> f b

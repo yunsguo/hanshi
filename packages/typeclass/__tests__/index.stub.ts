@@ -8,7 +8,7 @@ import {
     partial,
     proxied,
     right
-} from '../lib/prelude';
+} from '@hanshi/prelude';
 import {
     defineLeftTie,
     defineLiftAN,
@@ -16,7 +16,7 @@ import {
     defineRightTie,
     defineTie,
     defineTraverse
-} from '../lib/type-class';
+} from '../lib';
 
 const fmap = <F extends Functional>(
     f: F,

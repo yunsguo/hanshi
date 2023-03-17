@@ -10,12 +10,12 @@ import {
     Unary,
     decay as a,
     blindBind,
-    defineTraverse,
     partial,
     proxied,
     swapped,
     take
 } from '@hanshi/prelude';
+import { defineTraverse } from '@hanshi/typeclass';
 
 class Nothing {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any

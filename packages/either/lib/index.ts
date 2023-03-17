@@ -10,13 +10,13 @@ import {
     Unary,
     decay as a,
     blindBind,
-    defineTraverse,
     id,
     partial,
     proxied,
     swapped,
     take
 } from '@hanshi/prelude';
+import { defineTraverse } from '@hanshi/typeclass';
 
 type Either<A, B = unknown> = Left<A> | Right<B>;
 

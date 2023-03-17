@@ -1,5 +1,5 @@
 {
-    "name": "@hanshi/array-typeclass",
+    "name": "@hanshi/typeclass",
     "version": "0.0.1",
     "description": "> TODO: description",
     "author": "Guo, Yunsheng <yunsguo@gmail.com>",
@@ -14,12 +14,12 @@
     "files": [
         "dist"
     ],
-    "publishConfig": {
-        "access": "public"
-    },
     "prettier": "@hanshi/prettier-config",
     "eslintConfig": {
         "extends": "@hanshi"
+    },
+    "publishConfig": {
+        "access": "public"
     },
     "repository": {
         "type": "git",
@@ -34,23 +34,7 @@
     "bugs": {
         "url": "https://github.com/yunsguo/hanshi/issues"
     },
-    "devDependencies": {
-        "@hanshi/eslint-config": "^1.0.0",
-        "@hanshi/jest-config": "^1.0.0",
-        "@hanshi/prettier-config": "^1.0.0",
-        "@hanshi/typescript-config": "^1.0.0",
-        "@types/jest": "^29.2.2",
-        "@typescript-eslint/eslint-plugin": "^5.42.0",
-        "@typescript-eslint/parser": "^5.42.0",
-        "eslint": "^8.26.0",
-        "eslint-config-prettier": "^8.5.0",
-        "jest": "^29.2.2",
-        "prettier": "^2.7.1",
-        "ts-jest": "^29.0.3",
-        "typescript": "^4.8.4"
-    },
     "dependencies": {
-        "@hanshi/prelude": "^0.2.0",
-        "@hanshi/typeclass": "^0.0.1"
+        "@hanshi/prelude": "^0.2.0"
     }
 }

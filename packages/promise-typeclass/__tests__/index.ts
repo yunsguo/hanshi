@@ -1,11 +1,12 @@
-import { defineLiftAN, defineReplace, id } from '@hanshi/prelude';
+import { id } from '@hanshi/prelude';
+import { defineLiftAN, defineReplace } from '@hanshi/typeclass';
 import { fmap, leftTie, liftAN, pure, rightTie, tie, v$, warp } from '../lib';
 
 function add(a: number, b: number, c: number, d: number): Promise<number> {
     return pure(a + b + c + d);
 }
 
-describe('lib/promise-monad', () => {
+describe('lib/promise-typeclass', () => {
     describe('fmap', () => {
         it('should apply a function to a given functor', async () => {
             const ba1 = await fmap(add, Promise.resolve(1));
