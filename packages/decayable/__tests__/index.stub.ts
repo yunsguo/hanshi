@@ -1,4 +1,4 @@
-import { decay, dmap } from '../lib/decayable';
+import { decay, dmap } from '../lib';
 
 class NewType<T> {
     [decay]: T;

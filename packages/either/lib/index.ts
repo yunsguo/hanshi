@@ -1,4 +1,5 @@
 import { fmap as arrayFmap } from '@hanshi/array-typeclass';
+import { decay as a } from '@hanshi/decayable';
 import {
     FirstParameter,
     Functional,
@@ -8,7 +9,6 @@ import {
     ReversedPartialApplied,
     Terminal,
     Unary,
-    decay as a,
     blindBind,
     id,
     partial,

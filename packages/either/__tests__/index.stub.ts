@@ -1,4 +1,5 @@
 import { id } from '@hanshi/prelude';
+import { defineLiftAN, defineRightTie } from '@hanshi/typeclass';
 import {
     Either,
     Left,
@@ -21,7 +22,6 @@ import {
     v$,
     warp
 } from '../lib';
-import { defineLiftAN, defineRightTie } from '@hanshi/typeclass';
 
 describe('lib/either', () => {
     describe('either', () => {

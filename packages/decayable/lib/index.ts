@@ -1,4 +1,9 @@
-import { FirstParameter, Unary, checkWithError, partial } from './prelude';
+import {
+    FirstParameter,
+    Unary,
+    checkWithError,
+    partial
+} from '@hanshi/prelude';
 
 const decay: unique symbol = Symbol();
 

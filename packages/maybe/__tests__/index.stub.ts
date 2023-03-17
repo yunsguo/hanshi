@@ -1,4 +1,5 @@
 import { id } from '@hanshi/prelude';
+import { defineLiftAN, defineReplace } from '@hanshi/typeclass';
 import {
     Just,
     Nothing,
@@ -8,12 +9,11 @@ import {
     maybe,
     nothing,
     pure,
+    sequenceA,
     tie,
     v$,
-    warp,
-    sequenceA
+    warp
 } from '../lib';
-import { defineLiftAN, defineReplace } from '@hanshi/typeclass';
 
 describe('lib/maybe', () => {
     describe('maybe', () => {

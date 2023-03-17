@@ -1,17 +1,17 @@
 import {
     FirstParameter,
     Functional,
+    Init,
+    LastParameter,
     PartialApplied,
+    ReversedPartialApplied,
     Terminal,
     _,
-    left,
-    proxied,
-    partial,
-    LastParameter,
-    ReversedPartialApplied,
     blindBind,
-    take,
-    Init
+    left,
+    partial,
+    proxied,
+    take
 } from '@hanshi/prelude';
 
 /**

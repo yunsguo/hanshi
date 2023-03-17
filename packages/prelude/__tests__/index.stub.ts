@@ -14,7 +14,7 @@ import {
     take,
     unspreaded,
     withConstant
-} from '../lib/prelude';
+} from '../lib';
 
 function add(a: number, b: number, c: number, d: number) {
     return a + b + c + d;

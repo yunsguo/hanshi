@@ -1,0 +1,40 @@
+{
+    "name": "@hanshi/decayable",
+    "version": "0.0.1",
+    "description": "> TODO: description",
+    "author": "Guo, Yunsheng <yunsguo@gmail.com>",
+    "homepage": "https://github.com/yunsguo/hanshi#readme",
+    "license": "MIT",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "directories": {
+        "lib": "lib",
+        "test": "__tests__"
+    },
+    "files": [
+        "dist"
+    ],
+    "prettier": "@hanshi/prettier-config",
+    "eslintConfig": {
+        "extends": "@hanshi"
+    },
+    "publishConfig": {
+        "access": "public"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/yunsguo/hanshi.git"
+    },
+    "scripts": {
+        "build": "rm -rf dist/ && tsc",
+        "format": "prettier --write .",
+        "lint": "eslint . --fix",
+        "test": "jest"
+    },
+    "bugs": {
+        "url": "https://github.com/yunsguo/hanshi/issues"
+    },
+    "dependencies": {
+        "@hanshi/prelude": "^0.2.0"
+    }
+}
