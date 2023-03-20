@@ -155,7 +155,7 @@ describe('lib/either', () => {
         });
         describe('liftAN', () => {
             it('should return with correct value', () => {
-                const liftAN2 = defineLiftAN(pure, tie);
+                const liftAN2 = defineLiftAN(fmap, tie);
 
                 expect(liftAN(add)(pure(6), pure(7))).toStrictEqual(
                     liftAN2(add)(pure(6), pure(7))

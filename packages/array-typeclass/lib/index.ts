@@ -56,7 +56,7 @@ const v$ = <A, B>(a: A, pb: B[]): A[] => pb.map(() => a);
  * If it defines both, then they must behave the same as their default definitions
  * :
  *  * (<*>) = liftA2 id
- *  * liftA2 f x y = f <$> x <*> y
+ *  * liftA2 f x y = f <<$ x <*> y
  *
  * Further, any definition must satisfy the following
  * :
@@ -84,7 +84,7 @@ const pure = <A>(a: A): [A] => [a];
  * If it defines both, then they must behave the same as their default definitions
  * :
  *  * (<*>) = liftA2 id
- *  * liftA2 f x y = f <$> x <*> y
+ *  * liftA2 f x y = f <<$ x <*> y
  *
  * Further, any definition must satisfy the following
  * :

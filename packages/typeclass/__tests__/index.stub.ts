@@ -46,7 +46,7 @@ const liftAN = <F extends Functional>(f: F) =>
                 .map((as) => target(...as)),
         f
     );
-const liftAN2 = defineLiftAN(pure, tie);
+const liftAN2 = defineLiftAN(fmap, tie);
 
 const tie2 = defineTie(liftAN2);
 

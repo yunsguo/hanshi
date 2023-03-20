@@ -5,8 +5,14 @@ import {
     partial
 } from '@hanshi/prelude';
 
+/**
+ * A unique symbol representing the type trait field.
+ */
 const decay: unique symbol = Symbol();
 
+/**
+ * DmapDecayableError is thrown when any error is thrown within dmap operation.
+ */
 class DmapDecayableError<T> extends Error {
     constructor(private d: T, private original?: Error) {
         super(`Are you sure ${JSON.stringify(d)} is of typeclass decayable?`);
@@ -23,6 +29,12 @@ class DmapDecayableError<T> extends Error {
     }
 }
 
+/**
+ * Extract decayable using a unary function from a given value
+ * @param f the unary function
+ * @param d any value that is a decayable
+ * @returns
+ */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const dmap = <F extends Unary>(f: F, d: any) => {
     try {

@@ -1,6 +1,17 @@
 import { id } from '@hanshi/prelude';
 import { defineLiftAN, defineReplace } from '@hanshi/typeclass';
-import { fmap, leftTie, liftAN, pure, rightTie, tie, v$, warp } from '../lib';
+import {
+    fmap,
+    leftTie,
+    liftAN,
+    pure,
+    rightTie,
+    sequenceA,
+    tie,
+    traverse,
+    v$,
+    warp
+} from '../lib';
 
 function add(a: number, b: number, c: number, d: number): Promise<number> {
     return pure(a + b + c + d);
@@ -88,6 +99,29 @@ describe('lib/promise-typeclass', () => {
             await expect(
                 warp(Promise.reject('message'), add)(3, 4, 5)
             ).rejects.toMatch('message');
+        });
+    });
+    describe('sequenceA', () => {
+        it('should unwrap an array of promise', async () => {
+            expect(sequenceA([1, 2, 3, 4, 5].map(pure))).toStrictEqual(
+                Promise.resolve([1, 2, 3, 4, 5])
+            );
+            expect(
+                sequenceA([
+                    ...[1, 2, 3, 4, 5].map(pure),
+                    Promise.reject('message')
+                ])
+            ).rejects.toMatch('message');
+        });
+    });
+    describe('traverse', () => {
+        it('should traverse while retain structure', async () => {
+            expect(traverse(pure, [1, 2, 3, 4, 5])).toStrictEqual(
+                Promise.resolve([1, 2, 3, 4, 5])
+            );
+            expect(
+                traverse((a) => Promise.reject(a), [1, 2, 3, 4, 5])
+            ).rejects.toBe(1);
         });
     });
 });

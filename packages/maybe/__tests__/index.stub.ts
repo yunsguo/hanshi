@@ -79,7 +79,7 @@ describe('lib/maybe', () => {
         });
         describe('liftAN', () => {
             it('should return with correct value', () => {
-                const liftAN2 = defineLiftAN(pure, tie);
+                const liftAN2 = defineLiftAN(fmap, tie);
                 expect(liftAN(add)(pure(1), pure(2))).toStrictEqual(
                     liftAN2(add)(pure(1), pure(2))
                 );

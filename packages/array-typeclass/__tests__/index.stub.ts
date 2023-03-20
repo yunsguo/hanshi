@@ -12,7 +12,6 @@ import {
     fmap,
     leftTie,
     liftAN,
-    pure,
     rightTie,
     sequenceA,
     tie,
@@ -25,7 +24,7 @@ const v$2: typeof v$ = defineReplace(fmap);
 
 const tie2 = defineTie(liftAN);
 
-const liftAN2 = defineLiftAN(pure, tie);
+const liftAN2 = defineLiftAN(fmap, tie);
 
 const rightTie2 = defineRightTie(v$2, tie2);
 
