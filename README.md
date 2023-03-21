@@ -1,1 +1,1 @@
-### Hanshi is a funtional programming library that designed to be minimally bolarplated, pattern compliant and typescript/javascript native.
+# This is a monorepo powered by lerna for the functional programming library `hanshi`.

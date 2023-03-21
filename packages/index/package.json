@@ -1,7 +1,28 @@
 {
     "name": "hanshi",
-    "version": "0.1.5",
-    "description": "> TODO: description",
+    "version": "0.1.6",
+    "description": "A funtional programming library that designed to be minimally bolarplated, pattern compliant and typescript/javascript native.",
+    "keywords": [
+        "hanshi",
+        "typescript",
+        "javascript",
+        "utility",
+        "fp",
+        "functional",
+        "typeclass",
+        "type-class",
+        "type",
+        "array",
+        "array-monad",
+        "promise",
+        "promise-monad",
+        "either",
+        "maybe",
+        "functor",
+        "applicative",
+        "monad",
+        "traversable"
+    ],
     "author": "Guo, Yunsheng <yunsguo@gmail.com>",
     "homepage": "https://github.com/yunsguo/hanshi#readme",
     "license": "MIT",
@@ -44,6 +65,8 @@
     "dependencies": {
         "@hanshi/either": "^0.1.4",
         "@hanshi/maybe": "^0.1.4",
-        "@hanshi/prelude": "^0.2.0"
+        "@hanshi/prelude": "^0.2.2",
+        "@hanshi/promise-typeclass": "^0.1.5",
+        "@hanshi/array-typeclass": "^0.0.2"
     }
 }

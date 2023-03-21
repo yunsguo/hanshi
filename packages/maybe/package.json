@@ -1,6 +1,6 @@
 {
     "name": "@hanshi/maybe",
-    "version": "0.1.5",
+    "version": "0.1.6",
     "description": "A package providing an implementation of maybe.",
     "keywords": [
         "hanshi",
@@ -63,10 +63,10 @@
     },
     "prettier": "@hanshi/prettier-config",
     "dependencies": {
-        "@hanshi/prelude": "^0.2.0",
-        "@hanshi/array-typeclass": "^0.0.1",
-        "@hanshi/typeclass": "^0.0.1",
-        "@hanshi/decayable": "^0.0.1"
+        "@hanshi/prelude": "^0.2.2",
+        "@hanshi/array-typeclass": "^0.0.2",
+        "@hanshi/typeclass": "^0.1.0",
+        "@hanshi/decayable": "^0.0.2"
     },
     "publishConfig": {
         "access": "public"

@@ -1,6 +1,6 @@
 {
     "name": "@hanshi/either",
-    "version": "0.1.5",
+    "version": "0.1.6",
     "description": "A package providing an implementation of either: a biased union type.",
     "keywords": [
         "hanshi",
@@ -63,9 +63,9 @@
     },
     "prettier": "@hanshi/prettier-config",
     "dependencies": {
-        "@hanshi/array-typeclass": "^0.0.1",
-        "@hanshi/prelude": "^0.2.0",
-        "@hanshi/typeclass": "^0.0.1"
+        "@hanshi/array-typeclass": "^0.0.2",
+        "@hanshi/prelude": "^0.2.2",
+        "@hanshi/typeclass": "^0.1.0"
     },
     "publishConfig": {
         "access": "public"

@@ -382,7 +382,7 @@ type ReversedNPartialApplied<F, Args> = F extends (
                 ? Rest extends []
                     ? R
                     : (...args: Rest) => R
-                : NPartialApplied<(...args: Rest) => R, Init>
+                : ReversedNPartialApplied<(...args: Rest) => R, Init>
             : never
         : never
     : never;
@@ -390,7 +390,7 @@ type ReversedNPartialApplied<F, Args> = F extends (
 /**
  * __In reverse order__, obtain the 1st order partially applied type given the original `functional`.
  */
-type ReversedPartialApplied<F> = NPartialApplied<F, [LastParameter<F>]>;
+type ReversedPartialApplied<F> = ReversedNPartialApplied<F, [LastParameter<F>]>;
 
 /**
  * Extract the first element from the given tuple.
