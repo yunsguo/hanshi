@@ -1,6 +1,6 @@
 {
     "name": "hanshi",
-    "version": "0.1.7",
+    "version": "0.1.8",
     "description": "A funtional programming library that designed to be minimally bolarplated, pattern compliant and typescript/javascript native.",
     "keywords": [
         "hanshi",
@@ -24,7 +24,7 @@
         "traversable"
     ],
     "author": "Guo, Yunsheng <yunsguo@gmail.com>",
-    "homepage": "https://github.com/yunsguo/hanshi#readme",
+    "homepage": "https://github.com/yunsguo/hanshi/packages/index#readme",
     "license": "MIT",
     "main": "dist/index.js",
     "directories": {
