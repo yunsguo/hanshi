@@ -3,7 +3,7 @@
 `Hanshi` is a functional programming library designed with _minimal boilerplate_, _pattern compliance_, and _native TypeScript/JavaScript support_ in mind.
 For those who are less concerned with these aspects, `hanshi` offers simple `monadic` operations on some native types like `Array` and `Promise`, "_FP black magic_" as some may refer, as well as various convenient utilities.
 
-_Read this in other languages: [English](README.md), [简体中文](README.zh-cn.md)_
+_Read this in other languages: [English](https://github.com/yunsguo/hanshi/blob/HEAD/packages/index/README.md), [简体中文](https://github.com/yunsguo/hanshi/blob/HEAD/packages/index/README.zh-cn.md)_
 
 ## Usage
 
