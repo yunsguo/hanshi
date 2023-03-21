@@ -1,6 +1,6 @@
 {
     "name": "hanshi",
-    "version": "0.1.6",
+    "version": "0.1.7",
     "description": "A funtional programming library that designed to be minimally bolarplated, pattern compliant and typescript/javascript native.",
     "keywords": [
         "hanshi",
