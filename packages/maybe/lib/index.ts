@@ -15,7 +15,6 @@ import {
     swapped,
     take
 } from '@hanshi/prelude';
-import { defineTraverse } from '@hanshi/typeclass';
 
 class Nothing {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
@@ -131,8 +130,10 @@ const sequenceA = <TFA extends Maybe[]>(tfa: TFA): Maybe<FTA<TFA>> =>
         ? nothing
         : Just.of(tfa.map((m) => (m as Just)[a]));
 
-const traverse: <A, B>(f: Unary<A, Maybe<B>>, as: A[]) => Maybe<B[]> =
-    defineTraverse(arrayFmap, sequenceA);
+const traverse: <A, B>(f: Unary<A, Maybe<B>>, as: A[]) => Maybe<B[]> = (
+    f,
+    as
+) => sequenceA(arrayFmap(f, as));
 
 export {
     Just,

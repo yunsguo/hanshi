@@ -1,6 +1,6 @@
 {
     "name": "hanshi",
-    "version": "0.1.9",
+    "version": "0.1.10",
     "description": "A funtional programming library that designed to be minimally bolarplated, pattern compliant and typescript/javascript native.",
     "keywords": [
         "hanshi",
@@ -56,17 +56,17 @@
         "eslint-config-prettier": "^8.5.0",
         "prettier": "^2.7.1",
         "typedoc": "^0.23.27",
-        "typescript": "^4.8.4"
+        "typescript": "^5.0.2"
     },
     "eslintConfig": {
         "extends": "@hanshi"
     },
     "prettier": "@hanshi/prettier-config",
     "dependencies": {
-        "@hanshi/either": "^0.1.4",
-        "@hanshi/maybe": "^0.1.4",
-        "@hanshi/prelude": "^0.2.2",
-        "@hanshi/promise-typeclass": "^0.1.5",
-        "@hanshi/array-typeclass": "^0.0.2"
+        "@hanshi/array-typeclass": "^0.0.4",
+        "@hanshi/either": "^0.1.7",
+        "@hanshi/maybe": "^0.1.7",
+        "@hanshi/prelude": "^0.2.3",
+        "@hanshi/promise-typeclass": "^0.1.7"
     }
 }

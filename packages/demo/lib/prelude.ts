@@ -1,6 +1,3 @@
-# `prelude`
-
-```typescript
 import { _, curry } from '@hanshi/prelude';
 
 const add = (a: number, b: number) => a + b;
@@ -16,4 +13,3 @@ const curriedLinear = curry(linear);
 const [a, b, c] = [...Array(3).keys()].map(() => Math.random());
 
 console.log(linear(a, b, c) === curriedLinear(a)(b)(c));
-```

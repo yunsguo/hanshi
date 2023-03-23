@@ -16,7 +16,6 @@ import {
     swapped,
     take
 } from '@hanshi/prelude';
-import { defineTraverse } from '@hanshi/typeclass';
 
 type Either<A, B = unknown> = Left<A> | Right<B>;
 
@@ -177,7 +176,7 @@ const warp = <L, F extends Terminal<Either<L>>>(
 const insert = rightTie;
 
 type FTA<L, TFA extends unknown[]> = TFA extends [infer Head, ...infer Tail]
-    ? Head extends Either<L, infer R>
+    ? Head extends Either<L, unknown>
         ? [Head, FTA<L, Tail>]
         : never
     : [];
@@ -192,7 +191,7 @@ const sequenceA = <L, TFA extends Either<L>[]>(
 const traverse: <L, A, B>(
     f: Unary<A, Either<L, B>>,
     as: A[]
-) => Either<L, B[]> = defineTraverse(arrayFmap, sequenceA);
+) => Either<L, B[]> = (f, as) => sequenceA(arrayFmap(f, as));
 
 export {
     Either,

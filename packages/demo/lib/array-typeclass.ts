@@ -1,6 +1,3 @@
-# `@hanshi/array-typeclass`
-
-```typescript
 import * as AT from '@hanshi/array-typeclass';
 import { _ } from '@hanshi/prelude';
 
@@ -41,4 +38,3 @@ console.log(
     'limitedLinear =<< [-1,0,1] <<= [-2, 0 ,3 ] = ',
     AT.warp([-1, 1], limitedLinear)(5)
 );
-```

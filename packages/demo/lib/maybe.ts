@@ -1,6 +1,3 @@
-# `maybe`
-
-```typescript
 import { Just, Maybe, Nothing, maybe, nothing } from '@hanshi/maybe';
 import { FirstParameter, Unary, id } from '@hanshi/prelude';
 
@@ -55,4 +52,3 @@ console.log(
         get((o) => o.empty, k)
     )
 );
-```

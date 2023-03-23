@@ -1,18 +1,18 @@
 import {
     FirstParameter,
     Functional,
+    Init,
     LastParameter,
     PartialApplied,
     Terminal,
     Unary,
     blindBind,
     cons,
-    init,
     partial,
     partialCurried,
-    proxied
+    proxied,
+    take
 } from '@hanshi/prelude';
-import { defineTraverse } from '@hanshi/typeclass';
 
 /**
  * fmap :: (a -> b) -> f a -> f b
@@ -173,22 +173,24 @@ const leftTie = <A, B>(xs: A[], ys: B[]): A[] => ys.flatMap(() => xs);
  * @param pa
  * @returns
  */
-function warp<R, F extends Terminal<R[]>>(
+function warp<F extends Terminal<Array<unknown>>>(
     xs: LastParameter<F>[],
     f: F
 ): PartialApplied<F> {
     return blindBind(
         proxied(
-            (target: F, args: unknown[]) =>
-                xs.flatMap((x) => target(...init(args), x)),
+            (
+                target: F,
+                [, ...init]: [LastParameter<F>, ...Init<Parameters<F>>]
+            ) => xs.flatMap((x) => target(...take(f.length - 1, init), x)),
             f
         ) as F
     );
 }
 
-const w_ = warp;
-
 const insert = rightTie;
+
+const remit = pure;
 
 type FTA<TFA extends unknown[]> = TFA extends [infer AHead, ...infer Tail]
     ? AHead extends Array<infer Head>
@@ -196,19 +198,14 @@ type FTA<TFA extends unknown[]> = TFA extends [infer AHead, ...infer Tail]
         : never
     : [];
 
-const sequenceA: <TFA extends unknown[]>(tfa: TFA) => FTA<TFA>[] = (() => {
-    const sequenceA: Unary = (fa) => {
-        if (fa.length === 0) return pure(fa);
-        const [x, ...xs] = fa;
-        return tie(fmap(cons, x), sequenceA(xs));
-    };
-    return sequenceA;
-})();
+function sequenceA<TFA extends unknown[]>(tfa: TFA): FTA<TFA>[] {
+    if (tfa.length === 0) return [[] as FTA<TFA>];
+    const [x, ...xs] = tfa;
+    return tie(fmap(cons, x as unknown[]), sequenceA(xs)) as FTA<TFA>[];
+}
 
-const traverse: <A, B>(f: Unary<A, B[]>, as: A[]) => B[][] = defineTraverse(
-    fmap,
-    sequenceA
-);
+const traverse: <A, B>(f: Unary<A, B[]>, as: A[]) => B[][] = (f, as) =>
+    sequenceA(as.map(f));
 
 export {
     fmap,
@@ -216,11 +213,11 @@ export {
     leftTie,
     liftAN,
     pure,
+    remit,
     rightTie,
     sequenceA,
     tie,
     traverse,
     v$,
-    w_,
     warp
 };

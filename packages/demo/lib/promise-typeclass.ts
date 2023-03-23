@@ -1,11 +1,12 @@
-# `promise-typeclass`
-
-```Typescript
 import {
     warp as warpPromise,
     fmap as fmapPromise,
     liftAN as liftANPromise
 } from '@hanshi/promise-typeclass';
+
+// import { PromiseTypeclass as pt } from 'hanshi'; // or import as a namespace and refer as `pt.warp`.
+
+// const { warp: warpPromise, fmap: fmapPromise, liftAN: liftANPromise } = pt; // or destruct and rename.
 
 const waitedValue = <T>(v: T, t: number): Promise<T> =>
     new Promise((resolve) => setTimeout(() => resolve(v), t));
@@ -47,4 +48,3 @@ fmapPromise(
         waitedValue({ sample: 1 }, 1500)
     )
 ); // This `display` invocation will wait for 3 seconds in the scheduler, since all the side effects are retained.
-```

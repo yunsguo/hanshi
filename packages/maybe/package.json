@@ -1,6 +1,6 @@
 {
     "name": "@hanshi/maybe",
-    "version": "0.1.6",
+    "version": "0.1.7",
     "description": "A package providing an implementation of maybe.",
     "keywords": [
         "hanshi",
@@ -46,6 +46,7 @@
         "@hanshi/eslint-config": "^1.0.0",
         "@hanshi/jest-config": "^1.0.0",
         "@hanshi/prettier-config": "^1.0.0",
+        "@hanshi/typeclass": "^0.1.2",
         "@hanshi/typescript-config": "^1.0.1",
         "@types/jest": "^29.2.2",
         "@typescript-eslint/eslint-plugin": "^5.42.0",
@@ -56,17 +57,16 @@
         "prettier": "^2.7.1",
         "ts-jest": "^29.0.3",
         "typedoc": "^0.23.27",
-        "typescript": "^4.8.4"
+        "typescript": "^5.0.2"
     },
     "eslintConfig": {
         "extends": "@hanshi"
     },
     "prettier": "@hanshi/prettier-config",
     "dependencies": {
-        "@hanshi/prelude": "^0.2.2",
-        "@hanshi/array-typeclass": "^0.0.2",
-        "@hanshi/typeclass": "^0.1.0",
-        "@hanshi/decayable": "^0.0.2"
+        "@hanshi/array-typeclass": "^0.0.4",
+        "@hanshi/decayable": "^0.0.4",
+        "@hanshi/prelude": "^0.2.3"
     },
     "publishConfig": {
         "access": "public"
