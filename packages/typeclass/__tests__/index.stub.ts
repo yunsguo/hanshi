@@ -10,10 +10,10 @@ import {
     right
 } from '@hanshi/prelude';
 import {
+    defineInsert,
     defineLeftTie,
-    defineLiftAN,
+    defineLift,
     defineReplace,
-    defineRightTie,
     defineTie,
     defineTraverse
 } from '../lib';
@@ -32,7 +32,7 @@ const pure = <T>(a: T) => [a];
 const tie = <F extends Functional>(af: F[], aa: FirstParameter<F>[]) =>
     aa.flatMap((a) => af.map((f) => partial(f, a)));
 
-const liftAN = <F extends Functional>(f: F) =>
+const lift = <F extends Functional>(f: F) =>
     proxied(
         (target, args) =>
             args
@@ -46,30 +46,30 @@ const liftAN = <F extends Functional>(f: F) =>
                 .map((as) => target(...as)),
         f
     );
-const liftAN2 = defineLiftAN(fmap, tie);
+const lift2 = defineLift(fmap, tie);
 
-const tie2 = defineTie(liftAN2);
+const tie2 = defineTie(lift2);
 
 const rightTie = <A, B>(as: A[], bs: B[]) =>
     bs.flatMap((b) => as.flatMap((a) => right(a, b)));
 
-const rightTie2 = defineRightTie(replace2, tie2);
+const insert2 = defineInsert(replace2, tie2);
 
 const leftTie = <A, B>(as: A[], bs: B[]) =>
     bs.flatMap((b) => as.flatMap((a) => left(a, b)));
 
-const leftTie2 = defineLeftTie(liftAN2);
+const leftTie2 = defineLeftTie(lift2);
 
-const sequenceA = (() => {
-    const sequenceA: Unary = (fa) => {
+const sequence = (() => {
+    const sequence: Unary = (fa) => {
         if (fa.length === 0) return pure(fa);
         const [x, ...xs] = fa;
-        return tie(fmap(cons, x), sequenceA(xs));
+        return tie(fmap(cons, x), sequence(xs));
     };
-    return sequenceA;
+    return sequence;
 })();
 
-const traverse = defineTraverse(fmap, sequenceA);
+const traverse = defineTraverse(fmap, sequence);
 
 const NArrayRandom = (n: number): number[] =>
     [...Array(n).keys()].map(() => Math.random());
@@ -91,11 +91,11 @@ describe('lib/type-class', () => {
         });
     });
     const linear = (a: number, b: number, c: number) => a * b + c;
-    describe('liftAN', () => {
+    describe('lift', () => {
         it('should provide a correct implentation', () => {
             equivenlent(
-                liftAN2(linear),
-                liftAN(linear),
+                lift2(linear),
+                lift(linear),
                 [...Array(3).keys()].map(() => NArrayRandom(NRandom(1, 10)))
             );
         });
@@ -113,7 +113,7 @@ describe('lib/type-class', () => {
     });
     describe('rightTie', () => {
         it('should provide a correct implentation', () => {
-            equivenlent(rightTie2, rightTie, [
+            equivenlent(insert2, rightTie, [
                 NArrayRandom(NRandom(2, 10)),
                 NArrayRandom(NRandom(2, 10))
             ]);
@@ -127,10 +127,10 @@ describe('lib/type-class', () => {
             ]);
         });
     });
-    describe('sequenceA', () => {
+    describe('sequence', () => {
         it('should provide a correct implentation', () => {
             expect(
-                sequenceA([
+                sequence([
                     [1, 2, 3],
                     [4, 5, 6]
                 ])

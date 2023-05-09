@@ -4,7 +4,7 @@
 import {
     warp as warpPromise,
     fmap as fmapPromise,
-    liftAN as liftANPromise
+    lift as liftPromise
 } from '@hanshi/promise-typeclass';
 
 const waitedValue = <T>(v: T, t: number): Promise<T> =>
@@ -38,7 +38,7 @@ fmapPromise(display, waited4sNumber20); // This `display` invocation will wait f
 const noneTerminal = (name: string, value: object): string =>
     name + JSON.stringify(value);
 
-const liftedNoneTerminal = liftANPromise(noneTerminal); // `LiftAN` takes a function and returns a version of it that all parameters and the return value are promises.
+const liftedNoneTerminal = liftPromise(noneTerminal); // `Lift` takes a function and returns a version of it that all parameters and the return value are promises.
 
 fmapPromise(
     display,

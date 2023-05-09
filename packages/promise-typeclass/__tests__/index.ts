@@ -1,12 +1,12 @@
 import { id } from '@hanshi/prelude';
-import { defineLiftAN, defineReplace } from '@hanshi/typeclass';
+import { defineLift, defineReplace } from '@hanshi/typeclass';
 import {
     fmap,
+    insert,
     leftTie,
-    liftAN,
+    lift,
     pure,
-    rightTie,
-    sequenceA,
+    sequence,
     tie,
     traverse,
     v$,
@@ -58,16 +58,16 @@ describe('lib/promise-typeclass', () => {
             expect(ba4).toBe(10);
         });
     });
-    describe('liftAN', () => {
+    describe('lift', () => {
         it('should sequence operations and combine their results', async () => {
-            const liftAN2 = defineLiftAN(pure, tie);
+            const lift2 = defineLift(pure, tie);
             const args = [1, 2, 3, 4].map(pure) as [
                 Promise<number>,
                 Promise<number>,
                 Promise<number>,
                 Promise<number>
             ];
-            expect(liftAN(add)(...args)).toStrictEqual(liftAN2(add)(...args));
+            expect(lift(add)(...args)).toStrictEqual(lift2(add)(...args));
         });
     });
 
@@ -81,7 +81,7 @@ describe('lib/promise-typeclass', () => {
     describe('rightTie', () => {
         it('should sequence operations and combine their results', () => {
             expect(
-                rightTie(Promise.resolve(5), Promise.resolve('a'))
+                insert(Promise.resolve(5), Promise.resolve('a'))
             ).toStrictEqual(Promise.resolve('a'));
         });
     });
@@ -101,13 +101,13 @@ describe('lib/promise-typeclass', () => {
             ).rejects.toMatch('message');
         });
     });
-    describe('sequenceA', () => {
+    describe('sequence', () => {
         it('should unwrap an array of promise', async () => {
-            expect(sequenceA([1, 2, 3, 4, 5].map(pure))).toStrictEqual(
+            expect(sequence([1, 2, 3, 4, 5].map(pure))).toStrictEqual(
                 Promise.resolve([1, 2, 3, 4, 5])
             );
             expect(
-                sequenceA([
+                sequence([
                     ...[1, 2, 3, 4, 5].map(pure),
                     Promise.reject('message')
                 ])

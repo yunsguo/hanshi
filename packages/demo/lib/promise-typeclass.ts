@@ -1,12 +1,12 @@
 import {
-    warp as warpPromise,
     fmap as fmapPromise,
-    liftAN as liftANPromise
+    lift as liftPromise,
+    warp as warpPromise
 } from '@hanshi/promise-typeclass';
 
 // import { PromiseTypeclass as pt } from 'hanshi'; // or import as a namespace and refer as `pt.warp`.
 
-// const { warp: warpPromise, fmap: fmapPromise, liftAN: liftANPromise } = pt; // or destruct and rename.
+// const { warp: warpPromise, fmap: fmapPromise, lift: liftPromise } = pt; // or destruct and rename.
 
 const waitedValue = <T>(v: T, t: number): Promise<T> =>
     new Promise((resolve) => setTimeout(() => resolve(v), t));
@@ -39,7 +39,7 @@ fmapPromise(display, waited4sNumber20); // This `display` invocation will wait f
 const noneTerminal = (name: string, value: object): string =>
     name + JSON.stringify(value);
 
-const liftedNoneTerminal = liftANPromise(noneTerminal); // `LiftAN` takes a function and returns a version of it that all parameters and the return value are promises.
+const liftedNoneTerminal = liftPromise(noneTerminal); // `lift` takes a function and returns a version of it that all parameters and the return value are promises.
 
 fmapPromise(
     display,

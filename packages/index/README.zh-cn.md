@@ -11,12 +11,12 @@ _阅读其他语言版本: [English](README.md), [简体中文](README.zh-cn.md)
 import {
     warp as warpPromise,
     fmap as fmapPromise,
-    liftAN as liftANPromise
+    lift as liftPromise
 } from '@hanshi/promise-typeclass';
 
 // import { PromiseTypeclass as pt } from 'hanshi'; // 也可以作为一个命名空间导入并以 pt.warp 指代
 
-// const { warp: warpPromise, fmap: fmapPromise, liftAN: liftANPromise } = pt; // 也可以解构并重命名
+// const { warp: warpPromise, fmap: fmapPromise, lift: liftPromise } = pt; // 也可以解构并重命名
 
 const waitedValue = <T>(v: T, t: number): Promise<T> =>
     new Promise((resolve) => setTimeout(() => resolve(v), t));
@@ -49,7 +49,7 @@ fmapPromise(display, waited4sNumber20); // 这个 display 调用将在调度器�
 const noneTerminal = (name: string, value: object): string =>
     name + JSON.stringify(value);
 
-const liftedNoneTerminal = liftANPromise(noneTerminal); // 给定一个函数，LiftAN 会返回一个所有参数和返回值都是 Promise 的版本。
+const liftedNoneTerminal = liftPromise(noneTerminal); // 给定一个函数，Lift 会返回一个所有参数和返回值都是 Promise 的版本。
 
 fmapPromise(
     display,

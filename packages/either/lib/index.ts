@@ -138,7 +138,7 @@ type Lifted<A, F extends Functional> = (
     ...args: EitherMap<A, Parameters<F>>
 ) => Either<A, ReturnType<F>>;
 
-const liftAN = <A, F extends Functional>(f: F): Lifted<A, F> =>
+const lift = <A, F extends Functional>(f: F): Lifted<A, F> =>
     proxied((target: F, args: EitherMap<A, Parameters<F>>) => {
         const foundLeft = args.find(isLeft);
         if (foundLeft !== undefined) return foundLeft;
@@ -181,7 +181,7 @@ type FTA<L, TFA extends unknown[]> = TFA extends [infer Head, ...infer Tail]
         : never
     : [];
 
-const sequenceA = <L, TFA extends Either<L>[]>(
+const sequence = <L, TFA extends Either<L>[]>(
     tfa: TFA
 ): Either<L, FTA<L, TFA>> => {
     for (const e of tfa) if (e instanceof Left) return e;
@@ -191,7 +191,7 @@ const sequenceA = <L, TFA extends Either<L>[]>(
 const traverse: <L, A, B>(
     f: Unary<A, Either<L, B>>,
     as: A[]
-) => Either<L, B[]> = (f, as) => sequenceA(arrayFmap(f, as));
+) => Either<L, B[]> = (f, as) => sequence(arrayFmap(f, as));
 
 export {
     Either,
@@ -206,12 +206,12 @@ export {
     isRight,
     leftTie,
     lefts,
-    liftAN,
+    lift,
     partitionEithers,
     pure,
     rightTie,
     rights,
-    sequenceA,
+    sequence,
     tie,
     traverse,
     v$,

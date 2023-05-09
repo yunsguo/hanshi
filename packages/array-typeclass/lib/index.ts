@@ -117,7 +117,7 @@ type Lifted<F extends Functional> = (
     ...args: ArrayMap<Parameters<F>>
 ) => ReturnType<F>[];
 
-const liftAN = <F extends Functional>(f: F): Lifted<F> =>
+const lift = <F extends Functional>(f: F): Lifted<F> =>
     proxied(
         (target: F, args: ArrayMap<Parameters<F>>) =>
             args
@@ -132,7 +132,7 @@ const liftAN = <F extends Functional>(f: F): Lifted<F> =>
         f
     );
 
-const rightTie = <A, B>(xs: A[], ys: B[]): B[] =>
+const insert = <A, B>(xs: A[], ys: B[]): B[] =>
     ys.flatMap((y) => xs.map(() => y));
 
 const leftTie = <A, B>(xs: A[], ys: B[]): A[] => ys.flatMap(() => xs);
@@ -188,34 +188,28 @@ function warp<F extends Terminal<Array<unknown>>>(
     );
 }
 
-const insert = rightTie;
-
-const remit = pure;
-
 type FTA<TFA extends unknown[]> = TFA extends [infer AHead, ...infer Tail]
     ? AHead extends Array<infer Head>
         ? [Head, ...FTA<Tail>]
         : never
     : [];
 
-function sequenceA<TFA extends unknown[]>(tfa: TFA): FTA<TFA>[] {
+function sequence<TFA extends unknown[]>(tfa: TFA): FTA<TFA>[] {
     if (tfa.length === 0) return [[] as FTA<TFA>];
     const [x, ...xs] = tfa;
-    return tie(fmap(cons, x as unknown[]), sequenceA(xs)) as FTA<TFA>[];
+    return tie(fmap(cons, x as unknown[]), sequence(xs)) as FTA<TFA>[];
 }
 
 const traverse: <A, B>(f: Unary<A, B[]>, as: A[]) => B[][] = (f, as) =>
-    sequenceA(as.map(f));
+    sequence(as.map(f));
 
 export {
     fmap,
     insert,
     leftTie,
-    liftAN,
+    lift,
     pure,
-    remit,
-    rightTie,
-    sequenceA,
+    sequence,
     tie,
     traverse,
     v$,

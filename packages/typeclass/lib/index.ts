@@ -21,24 +21,23 @@ const defineReplace = (fmap: Binary) => (a: any, fb: any) =>
     fmap(_(left, a), fb);
 
 /**
- * Define applicative method `liftAN` from `pure` and `<*>`(tie).
+ * Define applicative method `lift` from `pure` and `<*>`(tie).
  * @param pure `pure` definition
  * @param tie `<*>`(tie) definition
- * @returns the `liftAN` definition
+ * @returns the `lift` definition
  */
-const defineLiftAN = (fmap: Binary, tie: Binary) => (f: Functional) =>
+const defineLift = (fmap: Binary, tie: Binary) => (f: Functional) =>
     proxied(
         (target, [head, ...tail]) => tail.reduce(tie, fmap(target, head)),
         f
     );
 
 /**
- * Define applicative method `<*>`(tie) from `liftAN`.
- * @param liftAN `liftAN` definition
+ * Define applicative method `<*>`(tie) from `lift`.
+ * @param lift `lift` definition
  * @returns the `<*>`(tie) definition
  */
-const defineTie = (liftAN: Unary) => (ff: any, fa: any) =>
-    liftAN(partial)(ff, fa);
+const defineTie = (lift: Unary) => (ff: any, fa: any) => lift(partial)(ff, fa);
 
 /**
  * Define `*>`(rightTie) from `<$`(replace) and `<*>`(tie).
@@ -46,38 +45,38 @@ const defineTie = (liftAN: Unary) => (ff: any, fa: any) =>
  * @param tie `<*>`(tie) definition
  * @returns the `*>`(rightTie) definition
  */
-const defineRightTie = (replace: Binary, tie: Binary) => (u: any, v: any) =>
+const defineInsert = (replace: Binary, tie: Binary) => (u: any, v: any) =>
     tie(replace(id, u), v);
 
 /**
- * Define `<*`(leftTie) from `liftAN`.
- * @param liftAN `liftAN` definition
+ * Define `<*`(leftTie) from `lift`.
+ * @param lift `lift` definition
  * @returns the `<*`(leftTie) definition
  */
-const defineLeftTie = (liftAN: Unary) => (u: any, v: any) => liftAN(left)(u, v);
+const defineLeftTie = (lift: Unary) => (u: any, v: any) => lift(left)(u, v);
 
 /**
- * Define `traverse` from `fmap` and `sequenceA`.
+ * Define `traverse` from `fmap` and `sequence`.
  * @param fmap `fmap` definition
- * @param sequenceA `sequenceA` definition
+ * @param sequence `sequence` definition
  * @returns the `traverse` definition
  */
-const defineTraverse = (fmap: Binary, sequenceA: Unary) => (f: any, ta: any) =>
-    sequenceA(fmap(f, ta));
+const defineTraverse = (fmap: Binary, sequence: Unary) => (f: any, ta: any) =>
+    sequence(fmap(f, ta));
 
 /**
- * Define `sequenceA` from `traverse`.
+ * Define `sequence` from `traverse`.
  * @param traverse `traverse` definition
- * @returns the `sequenceA` definition
+ * @returns the `sequence` definition
  */
-const defineSequenceA = (traverse: Binary) => partialCurried(traverse)(id);
+const defineSequence = (traverse: Binary) => partialCurried(traverse)(id);
 
 export {
+    defineInsert,
     defineLeftTie,
-    defineLiftAN,
+    defineLift,
     defineReplace,
-    defineRightTie,
-    defineSequenceA,
+    defineSequence,
     defineTie,
     defineTraverse
 };

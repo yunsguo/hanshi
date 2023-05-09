@@ -1,16 +1,18 @@
 import { id } from '@hanshi/prelude';
-import { defineLiftAN, defineReplace } from '@hanshi/typeclass';
+import { defineLift, defineReplace } from '@hanshi/typeclass';
 import {
     Just,
+    Maybe,
     Nothing,
     fmap,
     insert,
-    liftAN,
+    lift,
     maybe,
     nothing,
     pure,
-    sequenceA,
+    sequence,
     tie,
+    traverse,
     v$,
     warp
 } from '../lib';
@@ -77,14 +79,14 @@ describe('lib/maybe', () => {
                 );
             });
         });
-        describe('liftAN', () => {
+        describe('lift', () => {
             it('should return with correct value', () => {
-                const liftAN2 = defineLiftAN(fmap, tie);
-                expect(liftAN(add)(pure(1), pure(2))).toStrictEqual(
-                    liftAN2(add)(pure(1), pure(2))
+                const lift2 = defineLift(fmap, tie);
+                expect(lift(add)(pure(1), pure(2))).toStrictEqual(
+                    lift2(add)(pure(1), pure(2))
                 );
-                expect(liftAN(add)(pure(1), nothing)).toStrictEqual(
-                    liftAN2(add)(pure(1), nothing)
+                expect(lift(add)(pure(1), nothing)).toStrictEqual(
+                    lift2(add)(pure(1), nothing)
                 );
             });
         });
@@ -108,12 +110,30 @@ describe('lib/maybe', () => {
                 );
             });
         });
-        describe('sequenceA', () => {
+        describe('sequence', () => {
             it('should return with correct value', () => {
-                expect(sequenceA([nothing, Just.of(5)])).toStrictEqual(nothing);
-                expect(sequenceA([5, 6, 7].map(pure))).toStrictEqual(
+                expect(sequence([nothing, Just.of(5)])).toStrictEqual(nothing);
+                expect(sequence([5, 6, 7].map(pure))).toStrictEqual(
                     Just.of([5, 6, 7])
                 );
+            });
+        });
+        describe('traverse', () => {
+            it('should return with correct value', () => {
+                expect(
+                    traverse(
+                        (a: number): Maybe<number> =>
+                            Number.isNaN(a) ? nothing : Just.of(a + 1),
+                        [Number.NaN, 0, 1, 2]
+                    )
+                ).toStrictEqual(nothing);
+                expect(
+                    traverse(
+                        (a: number): Maybe<number> =>
+                            Number.isNaN(a) ? nothing : Just.of(a + 1),
+                        [0, 1, 2]
+                    )
+                ).toStrictEqual(Just.of([1, 2, 3]));
             });
         });
     });

@@ -14,9 +14,9 @@ import {
 } from '@hanshi/prelude';
 import {
     defineLeftTie,
-    defineLiftAN,
+    defineLift,
     defineReplace,
-    defineRightTie,
+    defineInsert,
     defineTie,
     defineTraverse
 } from '../lib';
@@ -35,7 +35,7 @@ const pure = <T>(a: T) => [a];
 const tie = <F extends Functional>(af: F[], aa: FirstParameter<F>[]) =>
     aa.flatMap((a) => af.map((f) => partial(f, a)));
 
-const liftAN = <F extends Functional>(f: F) =>
+const lift = <F extends Functional>(f: F) =>
     proxied(
         (target, args) =>
             args
@@ -49,28 +49,28 @@ const liftAN = <F extends Functional>(f: F) =>
                 .map((as) => target(...as)),
         f
     );
-const liftAN2 = defineLiftAN(fmap, tie);
+const lift2 = defineLift(fmap, tie);
 
-const tie2 = defineTie(liftAN2);
+const tie2 = defineTie(lift2);
 
 const rightTie = <A, B>(as: A[], bs: B[]) =>
     bs.flatMap((b) => as.flatMap((a) => right(a, b)));
 
-const rightTie2 = defineRightTie(replace2, tie2);
+const insert2 = defineInsert(replace2, tie2);
 
 const leftTie = <A, B>(as: A[], bs: B[]) =>
     bs.flatMap((b) => as.flatMap((a) => left(a, b)));
 
-const leftTie2 = defineLeftTie(liftAN2);
+const leftTie2 = defineLeftTie(lift2);
 
-const sequenceA = (() => {
-    const sequenceA: Unary = (fa) => {
+const sequence = (() => {
+    const sequence: Unary = (fa) => {
         if (fa.length === 0) return pure(fa);
         const [x, ...xs] = fa;
-        return tie(fmap(cons, x), sequenceA(xs));
+        return tie(fmap(cons, x), sequence(xs));
     };
-    return sequenceA;
+    return sequence;
 })();
 
-const traverse = defineTraverse(fmap, sequenceA);
+const traverse = defineTraverse(fmap, sequence);
 ```

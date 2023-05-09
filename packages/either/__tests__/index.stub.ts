@@ -1,5 +1,5 @@
 import { id } from '@hanshi/prelude';
-import { defineLiftAN, defineRightTie } from '@hanshi/typeclass';
+import { defineInsert, defineLift } from '@hanshi/typeclass';
 import {
     Either,
     Left,
@@ -11,12 +11,12 @@ import {
     isLeft,
     isRight,
     lefts,
-    liftAN,
+    lift,
     partitionEithers,
     pure,
     rightTie,
     rights,
-    sequenceA,
+    sequence,
     tie,
     traverse,
     v$,
@@ -153,36 +153,36 @@ describe('lib/either', () => {
                 ).toStrictEqual(Left.of(7));
             });
         });
-        describe('liftAN', () => {
+        describe('lift', () => {
             it('should return with correct value', () => {
-                const liftAN2 = defineLiftAN(fmap, tie);
+                const lift2 = defineLift(fmap, tie);
 
-                expect(liftAN(add)(pure(6), pure(7))).toStrictEqual(
-                    liftAN2(add)(pure(6), pure(7))
+                expect(lift(add)(pure(6), pure(7))).toStrictEqual(
+                    lift2(add)(pure(6), pure(7))
                 );
                 expect(
-                    liftAN<number, typeof add>(add)(Left.of(6), pure(7))
-                ).toStrictEqual(liftAN2(add)(Left.of(6), pure(7)));
+                    lift<number, typeof add>(add)(Left.of(6), pure(7))
+                ).toStrictEqual(lift2(add)(Left.of(6), pure(7)));
                 expect(
-                    liftAN<number, typeof add>(add)(Left.of(6), Left.of(7))
-                ).toStrictEqual(liftAN2(add)(Left.of(6), Left.of(7)));
+                    lift<number, typeof add>(add)(Left.of(6), Left.of(7))
+                ).toStrictEqual(lift2(add)(Left.of(6), Left.of(7)));
             });
         });
         describe('rightTie', () => {
             it('should return with correct value', () => {
-                const rightTie2 = defineRightTie(v$, tie);
+                const insert2 = defineInsert(v$, tie);
 
                 expect(rightTie(pure(6), pure(7))).toStrictEqual(
-                    rightTie2(pure(6), pure(7))
+                    insert2(pure(6), pure(7))
                 );
                 expect(rightTie(pure(6), Left.of(7))).toStrictEqual(
-                    rightTie2(pure(6), Left.of(7))
+                    insert2(pure(6), Left.of(7))
                 );
                 expect(rightTie(Left.of(6), pure(7))).toStrictEqual(
-                    rightTie2(Left.of(6), pure(7))
+                    insert2(Left.of(6), pure(7))
                 );
                 expect(rightTie(Left.of(6), Left.of(7))).toStrictEqual(
-                    rightTie2(Left.of(6), Left.of(7))
+                    insert2(Left.of(6), Left.of(7))
                 );
             });
         });
@@ -198,18 +198,18 @@ describe('lib/either', () => {
                 );
             });
         });
-        describe('sequenceA', () => {
+        describe('sequence', () => {
             it('should return with correct value', () => {
                 expect(
-                    sequenceA([Left.of(5), ...[6, 7, 8].map(pure)])
+                    sequence([Left.of(5), ...[6, 7, 8].map(pure)])
                 ).toStrictEqual(Left.of(5));
                 expect(
-                    sequenceA([
+                    sequence([
                         ...[5, 6, 7].map(Left.of),
                         ...[6, 7, 8].map(pure)
                     ])
                 ).toStrictEqual(Left.of(5));
-                expect(sequenceA([5, 6, 7].map(pure))).toStrictEqual(
+                expect(sequence([5, 6, 7].map(pure))).toStrictEqual(
                     Right.of([5, 6, 7])
                 );
             });

@@ -1,6 +1,6 @@
 {
     "name": "@hanshi/array-typeclass",
-    "version": "0.0.4",
+    "version": "0.0.5",
     "description": "A package providing type-class implentations such as monad and traversable to the native javascript array.",
     "keywords": [
         "hanshi",
@@ -52,7 +52,7 @@
         "@hanshi/eslint-config": "^1.0.0",
         "@hanshi/jest-config": "^1.0.0",
         "@hanshi/prettier-config": "^1.0.0",
-        "@hanshi/typeclass": "^0.1.2",
+        "@hanshi/typeclass": "^0.1.3",
         "@hanshi/typescript-config": "^1.0.1",
         "@types/jest": "^29.2.2",
         "@typescript-eslint/eslint-plugin": "^5.42.0",

@@ -81,7 +81,7 @@ type Lifted<F extends Functional> = (
     ...args: MaybeMap<Parameters<F>>
 ) => Maybe<ReturnType<F>>;
 
-const liftAN = <F extends Functional>(f: F): Lifted<F> =>
+const lift = <F extends Functional>(f: F): Lifted<F> =>
     proxied(
         (target: F, args: MaybeMap<Parameters<F>>) =>
             args.some((m) => (m as unknown) instanceof Nothing)
@@ -90,11 +90,10 @@ const liftAN = <F extends Functional>(f: F): Lifted<F> =>
         f
     );
 
-const rightTie: <A, B>(ma: Maybe<A>, mb: Maybe<B>) => Maybe<B> = (ma, mb) =>
+const insert: <A, B>(ma: Maybe<A>, mb: Maybe<B>) => Maybe<B> = (ma, mb) =>
     ma instanceof Nothing ? nothing : mb;
 
-const leftTie: <A, B>(ma: Maybe<A>, mb: Maybe<B>) => Maybe<A> =
-    swapped(rightTie);
+const leftTie: <A, B>(ma: Maybe<A>, mb: Maybe<B>) => Maybe<A> = swapped(insert);
 
 function warp<F extends Terminal<Maybe>>(
     marg: Maybe<LastParameter<F>>,
@@ -117,15 +116,13 @@ function warp<F extends Terminal<Maybe>>(
     ) as ReversedPartialApplied<F>;
 }
 
-const insert = rightTie;
-
 type FTA<TFA extends unknown[]> = TFA extends [infer MaybeHead, ...infer Tail]
     ? MaybeHead extends Maybe<infer Head>
         ? [Head, ...FTA<Tail>]
         : never
     : [];
 
-const sequenceA = <TFA extends Maybe[]>(tfa: TFA): Maybe<FTA<TFA>> =>
+const sequence = <TFA extends Maybe[]>(tfa: TFA): Maybe<FTA<TFA>> =>
     tfa.some((m) => m instanceof Nothing)
         ? nothing
         : Just.of(tfa.map((m) => (m as Just)[a]));
@@ -133,7 +130,7 @@ const sequenceA = <TFA extends Maybe[]>(tfa: TFA): Maybe<FTA<TFA>> =>
 const traverse: <A, B>(f: Unary<A, Maybe<B>>, as: A[]) => Maybe<B[]> = (
     f,
     as
-) => sequenceA(arrayFmap(f, as));
+) => sequence(arrayFmap(f, as));
 
 export {
     Just,
@@ -142,12 +139,11 @@ export {
     fmap,
     insert,
     leftTie,
-    liftAN,
+    lift,
     maybe,
     nothing,
     pure,
-    rightTie,
-    sequenceA,
+    sequence,
     tie,
     traverse,
     v$,

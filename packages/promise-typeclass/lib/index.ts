@@ -52,12 +52,12 @@ function v$<A, B>(a: A, pb: Promise<B>): Promise<A> {
  *
  * class Functor F => Applicative F where
  *
- * A functor with application, providing operations toembed pure expressions (`pure`), and sequence computations and combine their results (`<*>`(tie) and `liftAN`).
+ * A functor with application, providing operations toembed pure expressions (`pure`), and sequence computations and combine their results (`<*>`(tie) and `lift`).
  *
- * A minimal complete definition must include implementations of `pure` and of either `<*>`(tie) or `liftAN`. If it defines both, then they must behave the same as their default definitions
+ * A minimal complete definition must include implementations of `pure` and of either `<*>`(tie) or `lift`. If it defines both, then they must behave the same as their default definitions
  * :
- *  * `tie === (ff, fa) => liftAN(_)(ff, fa)`
- *  * `liftAN(f)(x, y) === tie(fmap(f, x), y)`
+ *  * `tie === (ff, fa) => lift(_)(ff, fa)`
+ *  * `lift(f)(x, y) === tie(fmap(f, x), y)`
  *
  * Further, any definition must satisfy the following
  * :
@@ -80,12 +80,12 @@ const pure = <A>(a: A) => Promise.resolve(a);
  *
  * class Functor F => Applicative F where
  *
- * A functor with application, providing operations toembed pure expressions (`pure`), and sequence computations and combine their results (`<*>`(tie) and `liftAN`).
+ * A functor with application, providing operations toembed pure expressions (`pure`), and sequence computations and combine their results (`<*>`(tie) and `lift`).
  *
- * A minimal complete definition must include implementations of `pure` and of either `<*>`(tie) or `liftAN`. If it defines both, then they must behave the same as their default definitions
+ * A minimal complete definition must include implementations of `pure` and of either `<*>`(tie) or `lift`. If it defines both, then they must behave the same as their default definitions
  * :
- *  * `tie === (ff, fa) => liftAN(_)(ff, fa)`
- *  * `liftAN(f)(x, y) === tie(fmap(f, x), y)`
+ *  * `tie === (ff, fa) => lift(_)(ff, fa)`
+ *  * `lift(f)(x, y) === tie(fmap(f, x), y)`
  *
  * Further, any definition must satisfy the following
  * :
@@ -122,12 +122,12 @@ type Lifted<F extends Functional> = (
  *
  * class Functor F => Applicative F where
  *
- * A functor with application, providing operations toembed pure expressions (`pure`), and sequence computations and combine their results (`<*>`(tie) and `liftAN`).
+ * A functor with application, providing operations toembed pure expressions (`pure`), and sequence computations and combine their results (`<*>`(tie) and `lift`).
  *
- * A minimal complete definition must include implementations of `pure` and of either `<*>`(tie) or `liftAN`. If it defines both, then they must behave the same as their default definitions
+ * A minimal complete definition must include implementations of `pure` and of either `<*>`(tie) or `lift`. If it defines both, then they must behave the same as their default definitions
  * :
- *  * `tie === (ff, fa) => liftAN(_)(ff, fa)`
- *  * `liftAN(f)(x, y) === tie(fmap(f, x), y)`
+ *  * `tie === (ff, fa) => lift(_)(ff, fa)`
+ *  * `lift(f)(x, y) === tie(fmap(f, x), y)`
  *
  * Further, any definition must satisfy the following
  * :
@@ -164,11 +164,11 @@ type Lifted<F extends Functional> = (
  *
  * Minimal complete definition
  * :
- * * pure, (tie | liftAN)
+ * * pure, (tie | lift)
  * @param f
  * @returns
  */
-const liftAN = <F extends Functional>(f: F): Lifted<F> =>
+const lift = <F extends Functional>(f: F): Lifted<F> =>
     proxied(
         (target: F, args: PromiseMap<Parameters<F>>) =>
             Promise.all(args).then((as) => target(...(as as unknown[]))),
@@ -180,12 +180,12 @@ const liftAN = <F extends Functional>(f: F): Lifted<F> =>
  *
  * class Functor F => Applicative F where
  *
- * A functor with application, providing operations toembed pure expressions (`pure`), and sequence computations and combine their results (`<*>`(tie) and `liftAN`).
+ * A functor with application, providing operations toembed pure expressions (`pure`), and sequence computations and combine their results (`<*>`(tie) and `lift`).
  *
- * A minimal complete definition must include implementations of `pure` and of either `<*>`(tie) or `liftAN`. If it defines both, then they must behave the same as their default definitions
+ * A minimal complete definition must include implementations of `pure` and of either `<*>`(tie) or `lift`. If it defines both, then they must behave the same as their default definitions
  * :
- *  * `tie === (ff, fa) => liftAN(_)(ff, fa)`
- *  * `liftAN(f)(x, y) === tie(fmap(f, x), y)`
+ *  * `tie === (ff, fa) => lift(_)(ff, fa)`
+ *  * `lift(f)(x, y) === tie(fmap(f, x), y)`
  *
  * Further, any definition must satisfy the following
  * :
@@ -201,7 +201,7 @@ const liftAN = <F extends Functional>(f: F): Lifted<F> =>
  * @param fb
  * @returns
  */
-const rightTie = <A, B>(fa: Promise<A>, fb: Promise<B>): Promise<B> =>
+const insert = <A, B>(fa: Promise<A>, fb: Promise<B>): Promise<B> =>
     fa.then(() => fb);
 
 /**
@@ -209,12 +209,12 @@ const rightTie = <A, B>(fa: Promise<A>, fb: Promise<B>): Promise<B> =>
  *
  * class Functor F => Applicative F where
  *
- * A functor with application, providing operations toembed pure expressions (`pure`), and sequence computations and combine their results (`<*>`(tie) and `liftAN`).
+ * A functor with application, providing operations toembed pure expressions (`pure`), and sequence computations and combine their results (`<*>`(tie) and `lift`).
  *
- * A minimal complete definition must include implementations of `pure` and of either `<*>`(tie) or `liftAN`. If it defines both, then they must behave the same as their default definitions
+ * A minimal complete definition must include implementations of `pure` and of either `<*>`(tie) or `lift`. If it defines both, then they must behave the same as their default definitions
  * :
- *  * `tie === (ff, fa) => liftAN(_)(ff, fa)`
- *  * `liftAN(f)(x, y) === tie(fmap(f, x), y)`
+ *  * `tie === (ff, fa) => lift(_)(ff, fa)`
+ *  * `lift(f)(x, y) === tie(fmap(f, x), y)`
  *
  * Further, any definition must satisfy the following
  * :
@@ -288,29 +288,15 @@ function warp<F extends Terminal<Promise<unknown>>>(
     ) as ReversedPartialApplied<F>;
 }
 
-const insert = rightTie;
-
 type AwaitedMap<PA extends unknown[]> = PA extends [infer Head, ...infer Tail]
     ? [Awaited<Head>, ...AwaitedMap<Tail>]
     : [];
 
-const sequenceA = <TFA extends Promise<unknown>[]>(
+const sequence = <TFA extends Promise<unknown>[]>(
     tfa: TFA
 ): Promise<AwaitedMap<TFA>> => Promise.all(tfa) as Promise<AwaitedMap<TFA>>;
 
 const traverse = <A, B>(f: Unary<A, Promise<B>>, as: A[]): Promise<B[]> =>
     Promise.all(as.map(f));
 
-export {
-    fmap,
-    insert,
-    leftTie,
-    liftAN,
-    pure,
-    rightTie,
-    tie,
-    v$,
-    warp,
-    sequenceA,
-    traverse
-};
+export { fmap, insert, leftTie, lift, pure, sequence, tie, traverse, v$, warp };

@@ -1,20 +1,20 @@
 import { Functional, chain, id } from '@hanshi/prelude';
 import {
+    defineInsert,
     defineLeftTie,
-    defineLiftAN,
+    defineLift,
     defineReplace,
-    defineRightTie,
-    defineSequenceA,
+    defineSequence,
     defineTie,
     defineTraverse
 } from '@hanshi/typeclass';
 import {
     fmap,
+    insert,
     leftTie,
-    liftAN,
-    remit,
-    rightTie,
-    sequenceA,
+    lift,
+    pure,
+    sequence,
     tie,
     traverse,
     v$,
@@ -23,17 +23,17 @@ import {
 
 const v$2: typeof v$ = defineReplace(fmap);
 
-const tie2 = defineTie(liftAN);
+const tie2 = defineTie(lift);
 
-const liftAN2 = defineLiftAN(fmap, tie);
+const lift2 = defineLift(fmap, tie);
 
-const rightTie2 = defineRightTie(v$2, tie2);
+const insert2 = defineInsert(v$2, tie2);
 
-const leftTie2 = defineLeftTie(liftAN2);
+const leftTie2 = defineLeftTie(lift2);
 
-const seqneuceA2: typeof sequenceA = defineSequenceA(traverse);
+const seqneuce2: typeof sequence = defineSequence(traverse);
 
-const traverse2 = defineTraverse(fmap, sequenceA);
+const traverse2 = defineTraverse(fmap, sequence);
 
 const NArrayRandom = (n: number): number[] =>
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -53,11 +53,11 @@ describe('lib/type-class', () => {
         });
     });
     const linear = (a: number, b: number, c: number) => a * b + c;
-    describe('liftAN', () => {
+    describe('lift', () => {
         it('should provide a correct implentation', () => {
             equivenlent(
-                liftAN2(linear),
-                liftAN(linear),
+                lift2(linear),
+                lift(linear),
                 [...Array(3).keys()].map(() => NArrayRandom(NRandom(1, 10)))
             );
         });
@@ -77,7 +77,7 @@ describe('lib/type-class', () => {
     });
     describe('rightTie', () => {
         it('should provide a correct implentation', () => {
-            equivenlent(rightTie2, rightTie, [
+            equivenlent(insert2, insert, [
                 NArrayRandom(NRandom(2, 10)),
                 NArrayRandom(NRandom(2, 10))
             ]);
@@ -101,7 +101,7 @@ describe('lib/type-class', () => {
                     [-1, 0, 1, 2],
                     warp(
                         [-2, -1, 0, 1, 2, 3],
-                        warp([-1, 0, 1], chain(remit, linear))
+                        warp([-1, 0, 1], chain(pure, linear))
                     )
                 )
             ).toStrictEqual([
@@ -112,9 +112,9 @@ describe('lib/type-class', () => {
             ]);
         });
     });
-    describe('sequenceA', () => {
+    describe('sequence', () => {
         it('should provide a correct implentation', () => {
-            equivenlent(seqneuceA2, sequenceA, [
+            equivenlent(seqneuce2, sequence, [
                 [
                     NArrayRandom(NRandom(2, 10)),
                     NArrayRandom(NRandom(2, 10)),
