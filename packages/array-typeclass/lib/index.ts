@@ -203,15 +203,4 @@ function sequence<TFA extends unknown[]>(tfa: TFA): FTA<TFA>[] {
 const traverse: <A, B>(f: Unary<A, B[]>, as: A[]) => B[][] = (f, as) =>
     sequence(as.map(f));
 
-export {
-    fmap,
-    insert,
-    leftTie,
-    lift,
-    pure,
-    sequence,
-    tie,
-    traverse,
-    v$,
-    warp
-};
+export { fmap, insert, leftTie, lift, pure, sequence, tie, traverse, v$, warp };
