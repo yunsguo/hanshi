@@ -1,7 +1,7 @@
 {
     "name": "@hanshi/demo",
     "private": true,
-    "version": "0.0.2",
+    "version": "0.0.3",
     "description": "Bunch of demos for the library `hanshi`.",
     "keywords": [
         "hanshi",
@@ -47,7 +47,7 @@
     "devDependencies": {
         "@hanshi/eslint-config": "^1.0.0",
         "@hanshi/prettier-config": "^1.0.0",
-        "@hanshi/typescript-config": "^1.0.1",
+        "@hanshi/typescript-config": "^1.0.2",
         "@typescript-eslint/eslint-plugin": "^5.42.0",
         "@typescript-eslint/parser": "^5.42.0",
         "eslint": "^8.26.0",
@@ -61,10 +61,10 @@
     },
     "prettier": "@hanshi/prettier-config",
     "dependencies": {
-        "@hanshi/array-typeclass": "^0.0.5",
-        "@hanshi/either": "^0.1.8",
-        "@hanshi/maybe": "^0.1.8",
-        "@hanshi/prelude": "^0.2.3",
-        "@hanshi/promise-typeclass": "^0.1.8"
+        "@hanshi/array-typeclass": "^0.0.6",
+        "@hanshi/either": "^0.1.9",
+        "@hanshi/maybe": "^0.1.9",
+        "@hanshi/prelude": "^0.2.4",
+        "@hanshi/promise-typeclass": "^0.1.9"
     }
 }

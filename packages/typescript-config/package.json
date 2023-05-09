@@ -1,12 +1,12 @@
 {
   "name": "@hanshi/typescript-config",
   "private": true,
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "> TODO: description",
   "author": "Guo, Yunsheng <yunsguo@gmail.com>",
   "homepage": "https://github.com/yunsguo/hanshi#readme",
   "license": "ISC",
-	"main": "tsconfig.json",
+  "main": "tsconfig.json",
   "publishConfig": {
     "access": "public"
   },

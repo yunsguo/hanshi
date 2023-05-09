@@ -1,6 +1,6 @@
 {
     "name": "@hanshi/prelude",
-    "version": "0.2.3",
+    "version": "0.2.4",
     "description": "A package providing a cluster of basic functions for hanshi.",
     "keywords": [
         "hanshi",
@@ -42,9 +42,9 @@
     },
     "devDependencies": {
         "@hanshi/eslint-config": "^1.0.0",
-        "@hanshi/jest-config": "^1.0.0",
+        "@hanshi/jest-config": "^1.0.2",
         "@hanshi/prettier-config": "^1.0.0",
-        "@hanshi/typescript-config": "^1.0.1",
+        "@hanshi/typescript-config": "^1.0.2",
         "@types/jest": "^29.2.2",
         "@typescript-eslint/eslint-plugin": "^5.42.0",
         "@typescript-eslint/parser": "^5.42.0",

@@ -1,6 +1,6 @@
 {
     "name": "@hanshi/typeclass",
-    "version": "0.1.3",
+    "version": "0.1.4",
     "description": "A package providing some common default typeclass methods implementations given minimum complete definition of said typeclass",
     "keywords": [
         "hanshi",
@@ -49,9 +49,9 @@
     },
     "devDependencies": {
         "@hanshi/eslint-config": "^1.0.0",
-        "@hanshi/jest-config": "^1.0.0",
+        "@hanshi/jest-config": "^1.0.2",
         "@hanshi/prettier-config": "^1.0.0",
-        "@hanshi/typescript-config": "^1.0.0",
+        "@hanshi/typescript-config": "^1.0.2",
         "@types/jest": "^29.2.2",
         "@typescript-eslint/eslint-plugin": "^5.42.0",
         "@typescript-eslint/parser": "^5.42.0",
@@ -64,6 +64,6 @@
         "typescript": "^5.0.2"
     },
     "dependencies": {
-        "@hanshi/prelude": "^0.2.3"
+        "@hanshi/prelude": "^0.2.4"
     }
 }

@@ -1,6 +1,6 @@
 {
     "name": "@hanshi/promise-typeclass",
-    "version": "0.1.8",
+    "version": "0.1.9",
     "description": "A package providing type-class implentations such as monad and traversable to the native type promise.",
     "keywords": [
         "hanshi",
@@ -44,10 +44,10 @@
     },
     "devDependencies": {
         "@hanshi/eslint-config": "^1.0.0",
-        "@hanshi/jest-config": "^1.0.0",
+        "@hanshi/jest-config": "^1.0.2",
         "@hanshi/prettier-config": "^1.0.0",
-        "@hanshi/typeclass": "^0.1.3",
-        "@hanshi/typescript-config": "^1.0.0",
+        "@hanshi/typeclass": "^0.1.4",
+        "@hanshi/typescript-config": "^1.0.2",
         "@types/jest": "^29.2.2",
         "@typescript-eslint/eslint-plugin": "^5.42.0",
         "@typescript-eslint/parser": "^5.42.0",
@@ -60,7 +60,7 @@
         "typescript": "^5.0.2"
     },
     "dependencies": {
-        "@hanshi/prelude": "^0.2.3"
+        "@hanshi/prelude": "^0.2.4"
     },
     "eslintConfig": {
         "extends": "@hanshi"
